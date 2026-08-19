@@ -1,0 +1,151 @@
+<div class="wrap">
+
+  <header class="mast">
+    <div>
+      <p class="eyebrow" style="margin:0 0 4px">Bodyweight training log &middot; 12-week beginner ladder</p>
+      <h1>Zero to Bar</h1>
+      <p class="sub">Show up, log the set, move the number. Everything stays on this device.</p>
+    </div>
+    <div class="mast-right">
+      <button class="iconbtn" id="themeBtn" type="button">Theme</button>
+    </div>
+  </header>
+
+  <section class="band" id="band" aria-label="Training summary"></section>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" id="tab-today"   aria-controls="panel-today"   aria-selected="true">Today</button>
+    <button role="tab" id="tab-progress" aria-controls="panel-progress" aria-selected="false">Progress</button>
+    <button role="tab" id="tab-program"  aria-controls="panel-program"  aria-selected="false">Program</button>
+  </nav>
+
+  <!-- ================= TODAY ================= -->
+  <div class="panel" id="panel-today" role="tabpanel" aria-labelledby="tab-today">
+    <div class="card">
+      <header>
+        <div>
+          <h2 id="dayTitle">Today</h2>
+          <p class="eyebrow" id="dayMeta" style="margin-top:3px"></p>
+        </div>
+        <div class="daynav">
+          <button type="button" id="prevDay" aria-label="Previous day">&#8592;</button>
+          <button type="button" id="todayBtn">Today</button>
+          <button type="button" id="nextDay" aria-label="Next day">&#8594;</button>
+        </div>
+      </header>
+      <div class="body">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <span class="sessionmark" id="sessionMark"></span>
+          <span class="eyebrow" id="sessionHint"></span>
+        </div>
+        <div id="workout"></div>
+        <textarea class="note" id="note" placeholder="How did it feel? Anything to remember for next time."></textarea>
+        <div class="actions">
+          <button class="btn" type="button" id="saveBtn">Log the day</button>
+          <button class="btn ghost" type="button" id="clearBtn">Clear day</button>
+          <span class="saved" id="savedMsg" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PROGRESS ================= -->
+  <div class="panel" id="panel-progress" role="tabpanel" aria-labelledby="tab-progress" hidden>
+    <div class="card">
+      <header><h2>The last 12 weeks</h2><span class="eyebrow" id="calRange"></span></header>
+      <div class="body">
+        <p class="lede">Each column is a week, each square a day. Colour depth is how much work you put in — grey is a day that got away, blue-grey is a logged rest.</p>
+        <div class="calwrap" style="margin-top:16px">
+          <div class="calmonths" id="calMonths"></div>
+          <div class="cal" id="cal"></div>
+        </div>
+        <div class="callegend">
+          <span>Less</span>
+          <i style="background:var(--grid-empty)"></i>
+          <i style="background:var(--mark-soft)"></i>
+          <i style="background:color-mix(in srgb, var(--mark) 55%, var(--mark-soft))"></i>
+          <i style="background:var(--mark)"></i>
+          <span>More</span>
+          <span style="margin-left:10px;display:inline-flex;align-items:center;gap:6px"><i style="background:var(--rest);opacity:.42"></i> Rest logged</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <header><h2>Best single set</h2><span class="eyebrow">All time &middot; last 12 sessions plotted</span></header>
+      <div class="body">
+        <div class="tablescroll"><table class="prtable" id="prTable"></table></div>
+        <p class="note-block"><strong>Reading this:</strong> the number is the most reps (or seconds) you have ever put into one unbroken set. The line is your best set in each of your last twelve sessions for that movement — it should drift upward, with dips. Dips are normal.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <header><h2>Totals</h2></header>
+      <div class="body"><div class="tablescroll"><table class="prtable" id="totalTable"></table></div></div>
+    </div>
+  </div>
+
+  <!-- ================= PROGRAM ================= -->
+  <div class="panel" id="panel-program" role="tabpanel" aria-labelledby="tab-program" hidden>
+    <div class="card">
+      <header><h2>The week</h2><span class="eyebrow">Three sessions &middot; three mobility days &middot; one rest</span></header>
+      <div class="body">
+        <p class="lede">Three strength sessions a week is where beginners actually gain — muscle and connective tissue rebuild on the off days, not during the work. The other four days still get a checkbox so the habit never breaks.</p>
+        <div class="weekgrid" id="weekGrid" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <header><h2>Progression ladders</h2><span class="eyebrow">Your current rung is marked</span></header>
+      <div class="body">
+        <p class="lede">You do not add weight in calisthenics — you change leverage. When you can hit the top of the rep range on every set, for two sessions running, step up a rung and let the reps drop again.</p>
+        <div id="ladders" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <header><h2>Videos worth following</h2><span class="eyebrow">Free &middot; YouTube</span></header>
+      <div class="body">
+        <p class="lede">Start with the first one — it is a form-and-programming primer rather than a follow-along, which is the thing beginners actually miss. Then use a follow-along on days when you would rather be told what to do than read a table.</p>
+        <ol class="vids" style="margin-top:16px" id="vids"></ol>
+        <p class="note-block"><strong>One caveat:</strong> these were surfaced by web search, and YouTube itself was unreachable from the machine that built this page, so titles and channels come from search listings rather than the videos themselves. Check that a link is still live before you build a week around it.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <header><h2>Form rules that prevent most injuries</h2></header>
+      <div class="body">
+        <ul style="margin:0;padding-left:20px;color:var(--ink-2);max-width:66ch;display:grid;gap:9px">
+          <li><strong style="color:var(--ink)">Full range beats extra reps.</strong> Chest to the floor, chin over the bar, hip crease below the knee. A half rep trains a half body.</li>
+          <li><strong style="color:var(--ink)">Leave two in the tank.</strong> Stop each set when two clean reps remain. Grinding to failure every set wrecks the next session.</li>
+          <li><strong style="color:var(--ink)">Slow the way down.</strong> Two to three seconds lowering, one second up. The lowering half is where most of the strength is built.</li>
+          <li><strong style="color:var(--ink)">Ribs down, glutes on.</strong> In push-ups, planks and hangs, brace as if bracing for a punch. A sagging low back is the most common beginner fault.</li>
+          <li><strong style="color:var(--ink)">Warm the wrists and shoulders.</strong> Sixty seconds each before pushing days. Wrist and elbow pain is what ends most beginner runs, not muscle soreness.</li>
+          <li><strong style="color:var(--ink)">Sharp pain is a stop sign.</strong> Soreness spread over a muscle for a day or two is training. Pinpoint pain in a joint means back down a rung.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <header><h2>Your data</h2><span class="eyebrow">Stored in this browser only</span></header>
+      <div class="body">
+        <p class="lede">Nothing leaves your device — there is no account and no server. That also means clearing site data wipes your log, so export a backup now and then, and import it if you move to a new phone or browser.</p>
+        <div class="actions" style="border-top:0;padding-top:4px;margin-top:14px">
+          <button class="btn ghost" type="button" id="exportBtn">Export backup</button>
+          <button class="btn ghost" type="button" id="importBtn">Import backup</button>
+          <button class="btn ghost" type="button" id="resetBtn" style="border-color:var(--danger);color:var(--danger)">Erase everything</button>
+          <input type="file" id="importFile" accept="application/json,.json" hidden>
+          <span class="saved" id="dataMsg" role="status" aria-live="polite"></span>
+        </div>
+        <div class="hr"></div>
+        <label class="eyebrow" for="startDate" style="display:block;margin-bottom:6px">Program start date &mdash; sets which week you are in</label>
+        <input type="date" id="startDate" class="setin" style="width:auto;padding:0 10px;font-size:14px">
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">
+    <span>Zero to Bar &middot; local-first training log</span>
+    <span>Not medical advice &middot; see a physician before starting</span>
+  </p>
+</div>

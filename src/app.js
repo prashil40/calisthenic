@@ -110,19 +110,19 @@
   const VIDEOS = [
     { t: "Calisthenics for Complete Beginners — tips, exercise form, programming",
       url: "https://www.youtube.com/watch?v=1mlN0yuxoLE",
-      meta: "Primer · form + programming",
-      why: "Start here. It covers why the progressions are ordered the way they are, which is the part that keeps you training in month three." },
+      meta: "Primer · form + programming · Dec 2022",
+      why: "Start here. It covers why the progressions are ordered the way they are, plus warming up and how sets and reps work — the part that keeps you training in month three." },
     { t: "The Best Workout Plan to Start Calisthenics for Beginners",
       url: "https://www.youtube.com/watch?v=LuM1PZgxWjI",
-      meta: "Plan · three days a week",
-      why: "Lays out an explicit three-day beginner split — the same shape as sessions A, B and C in this log." },
+      meta: "Plan · three days a week · Feb 2026",
+      why: "Lays out an explicit three-day beginner split — the same shape as sessions A, B and C in this log. The most recent of these." },
     { t: "20 Min Beginner Calisthenics Workout at Home — no equipment",
       url: "https://www.youtube.com/watch?v=kuUZYUBHryw",
-      meta: "Follow-along · 20 min · no kit",
+      meta: "Follow-along · 20 min · Feb 2024",
       why: "For days when you want to be told what to do. Nothing needed but floor space." },
     { t: "How to Start Calisthenics for Beginners — best workout routine",
       url: "https://www.youtube.com/watch?v=fO8QmrsCOOE",
-      meta: "Guide · full walkthrough",
+      meta: "Guide · full walkthrough · Feb 2025",
       why: "A second take on the same fundamentals. Useful when one coach's cue for a movement does not click." },
     { t: "How to Start Calisthenics — a complete beginner's guide",
       url: "https://www.youtube.com/watch?v=XQJp42f7GJQ",
@@ -131,7 +131,7 @@
     { t: "Calisthenicmovement — channel",
       url: "https://www.youtube.com/@calisthenicmovement",
       meta: "Channel · technique library",
-      why: "The reference library. When a movement hurts or stalls, their tutorial for it is usually the clearest one on the platform." }
+      why: "The reference library, and the channel most consistently named as the safest starting point for beginners. When a movement hurts or stalls, their tutorial for it is usually the clearest one on the platform." }
   ];
 
   /* ---------- date helpers ----------------------------------------- */

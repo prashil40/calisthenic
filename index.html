@@ -307,6 +307,13 @@ textarea.note{
 .note-block strong{color:var(--ink)}
 p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
 .hr{height:1px;background:var(--line);margin:20px 0}
+.textbackup{margin-top:18px;border:1px solid var(--line);background:var(--surface-2);padding:12px 14px}
+.textbackup summary{
+  cursor:pointer;font-family:"JetBrains Mono",monospace;font-size:11px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);
+}
+.textbackup summary:hover{color:var(--ink)}
+.textbackup textarea{min-height:110px;font-family:"JetBrains Mono",monospace;font-size:11.5px;background:var(--surface)}
 .foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 @media (max-width:600px){
@@ -457,6 +464,15 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
           <input type="file" id="importFile" accept="application/json,.json" hidden>
           <span class="saved" id="dataMsg" role="status" aria-live="polite"></span>
         </div>
+        <details class="textbackup">
+          <summary>Backup as text &mdash; works even where file downloads do not</summary>
+          <p class="lede" style="margin:10px 0 0;font-size:13.5px">Copy this somewhere safe, or paste an old backup in and restore it.</p>
+          <textarea id="backupText" class="note" spellcheck="false" aria-label="Backup data as JSON"></textarea>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+            <button class="btn ghost" type="button" id="copyTextBtn">Copy to clipboard</button>
+            <button class="btn ghost" type="button" id="restoreTextBtn">Restore from this box</button>
+          </div>
+        </details>
         <div class="hr"></div>
         <label class="eyebrow" for="startDate" style="display:block;margin-bottom:6px">Program start date &mdash; sets which week you are in</label>
         <input type="date" id="startDate" class="setin" style="width:auto;padding:0 10px;font-size:14px">
@@ -1011,14 +1027,69 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
     flash("dataMsg", "Program start moved to " + prettyShort(state.start) + ".");
   });
 
-  $("exportBtn").addEventListener("click", () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  // Saving a file: when the page is running inside the claude.ai artifact
+  // viewer the frame cannot start its own download, so ask the host to
+  // offer the file. Everywhere else, a plain object-URL link works.
+  async function saveBackupFile() {
+    const json = JSON.stringify(state, null, 2);
+    const filename = "zero-to-bar-" + ymd(new Date()) + ".json";
+    const host = window.claude && typeof window.claude.use === "function"
+      ? await window.claude.use("downloads").catch(() => null)
+      : null;
+    if (host) {
+      try {
+        await host.save({ filename: filename, data: json });
+        flash("dataMsg", "Backup saved.");
+      } catch (err) {
+        flash("dataMsg", err && err.code === "declined"
+          ? "Save cancelled — the text box below always works."
+          : "Could not save a file here. Use the text box below.");
+      }
+      return;
+    }
+    const blob = new Blob([json], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "zero-to-bar-" + ymd(new Date()) + ".json";
+    a.download = filename;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     flash("dataMsg", "Backup downloaded.");
+  }
+  $("exportBtn").addEventListener("click", saveBackupFile);
+
+  /* ---------- text backup: the route that works everywhere ---------- */
+  function restore(obj) {
+    if (!obj || typeof obj !== "object" || !obj.log) throw new Error("shape");
+    state = { v: 1, start: obj.start || ymd(new Date()),
+              levels: Object.assign({}, DEFAULT_LEVELS, obj.levels || {}),
+              log: obj.log, theme: obj.theme || "auto" };
+    save(); applyTheme(); renderBand(); renderToday(); renderProgram();
+    return Object.keys(state.log).length;
+  }
+
+  document.querySelector(".textbackup").addEventListener("toggle", (ev) => {
+    if (ev.target.open) $("backupText").value = JSON.stringify(state);
+  });
+
+  $("copyTextBtn").addEventListener("click", async () => {
+    const text = JSON.stringify(state);
+    $("backupText").value = text;
+    try {
+      await navigator.clipboard.writeText(text);
+      flash("dataMsg", "Backup copied to the clipboard.");
+    } catch (err) {
+      $("backupText").select();
+      flash("dataMsg", "Press copy on the selected text.");
+    }
+  });
+
+  $("restoreTextBtn").addEventListener("click", () => {
+    try {
+      const n = restore(JSON.parse($("backupText").value));
+      flash("dataMsg", "Restored — " + n + (n === 1 ? " day." : " days."));
+    } catch (err) {
+      flash("dataMsg", "That text is not a Zero to Bar backup.");
+    }
   });
 
   $("importBtn").addEventListener("click", () => $("importFile").click());
@@ -1028,13 +1099,8 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
     const r = new FileReader();
     r.onload = () => {
       try {
-        const s = JSON.parse(r.result);
-        if (!s || typeof s !== "object" || !s.log) throw new Error("shape");
-        state = { v: 1, start: s.start || ymd(new Date()),
-                  levels: Object.assign({}, DEFAULT_LEVELS, s.levels || {}),
-                  log: s.log, theme: s.theme || "auto" };
-        save(); applyTheme(); renderBand(); renderToday(); renderProgram();
-        flash("dataMsg", "Backup restored — " + Object.keys(state.log).length + " days.");
+        const n = restore(JSON.parse(r.result));
+        flash("dataMsg", "Backup restored — " + n + (n === 1 ? " day." : " days."));
       } catch (err) {
         flash("dataMsg", "That file is not a Zero to Bar backup.");
       }

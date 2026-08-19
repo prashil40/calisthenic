@@ -137,6 +137,15 @@
           <input type="file" id="importFile" accept="application/json,.json" hidden>
           <span class="saved" id="dataMsg" role="status" aria-live="polite"></span>
         </div>
+        <details class="textbackup">
+          <summary>Backup as text &mdash; works even where file downloads do not</summary>
+          <p class="lede" style="margin:10px 0 0;font-size:13.5px">Copy this somewhere safe, or paste an old backup in and restore it.</p>
+          <textarea id="backupText" class="note" spellcheck="false" aria-label="Backup data as JSON"></textarea>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+            <button class="btn ghost" type="button" id="copyTextBtn">Copy to clipboard</button>
+            <button class="btn ghost" type="button" id="restoreTextBtn">Restore from this box</button>
+          </div>
+        </details>
         <div class="hr"></div>
         <label class="eyebrow" for="startDate" style="display:block;margin-bottom:6px">Program start date &mdash; sets which week you are in</label>
         <input type="date" id="startDate" class="setin" style="width:auto;padding:0 10px;font-size:14px">

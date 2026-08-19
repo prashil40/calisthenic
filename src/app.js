@@ -538,14 +538,69 @@
     flash("dataMsg", "Program start moved to " + prettyShort(state.start) + ".");
   });
 
-  $("exportBtn").addEventListener("click", () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  // Saving a file: when the page is running inside the claude.ai artifact
+  // viewer the frame cannot start its own download, so ask the host to
+  // offer the file. Everywhere else, a plain object-URL link works.
+  async function saveBackupFile() {
+    const json = JSON.stringify(state, null, 2);
+    const filename = "zero-to-bar-" + ymd(new Date()) + ".json";
+    const host = window.claude && typeof window.claude.use === "function"
+      ? await window.claude.use("downloads").catch(() => null)
+      : null;
+    if (host) {
+      try {
+        await host.save({ filename: filename, data: json });
+        flash("dataMsg", "Backup saved.");
+      } catch (err) {
+        flash("dataMsg", err && err.code === "declined"
+          ? "Save cancelled — the text box below always works."
+          : "Could not save a file here. Use the text box below.");
+      }
+      return;
+    }
+    const blob = new Blob([json], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "zero-to-bar-" + ymd(new Date()) + ".json";
+    a.download = filename;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     flash("dataMsg", "Backup downloaded.");
+  }
+  $("exportBtn").addEventListener("click", saveBackupFile);
+
+  /* ---------- text backup: the route that works everywhere ---------- */
+  function restore(obj) {
+    if (!obj || typeof obj !== "object" || !obj.log) throw new Error("shape");
+    state = { v: 1, start: obj.start || ymd(new Date()),
+              levels: Object.assign({}, DEFAULT_LEVELS, obj.levels || {}),
+              log: obj.log, theme: obj.theme || "auto" };
+    save(); applyTheme(); renderBand(); renderToday(); renderProgram();
+    return Object.keys(state.log).length;
+  }
+
+  document.querySelector(".textbackup").addEventListener("toggle", (ev) => {
+    if (ev.target.open) $("backupText").value = JSON.stringify(state);
+  });
+
+  $("copyTextBtn").addEventListener("click", async () => {
+    const text = JSON.stringify(state);
+    $("backupText").value = text;
+    try {
+      await navigator.clipboard.writeText(text);
+      flash("dataMsg", "Backup copied to the clipboard.");
+    } catch (err) {
+      $("backupText").select();
+      flash("dataMsg", "Press copy on the selected text.");
+    }
+  });
+
+  $("restoreTextBtn").addEventListener("click", () => {
+    try {
+      const n = restore(JSON.parse($("backupText").value));
+      flash("dataMsg", "Restored — " + n + (n === 1 ? " day." : " days."));
+    } catch (err) {
+      flash("dataMsg", "That text is not a Zero to Bar backup.");
+    }
   });
 
   $("importBtn").addEventListener("click", () => $("importFile").click());
@@ -555,13 +610,8 @@
     const r = new FileReader();
     r.onload = () => {
       try {
-        const s = JSON.parse(r.result);
-        if (!s || typeof s !== "object" || !s.log) throw new Error("shape");
-        state = { v: 1, start: s.start || ymd(new Date()),
-                  levels: Object.assign({}, DEFAULT_LEVELS, s.levels || {}),
-                  log: s.log, theme: s.theme || "auto" };
-        save(); applyTheme(); renderBand(); renderToday(); renderProgram();
-        flash("dataMsg", "Backup restored — " + Object.keys(state.log).length + " days.");
+        const n = restore(JSON.parse(r.result));
+        flash("dataMsg", "Backup restored — " + n + (n === 1 ? " day." : " days."));
       } catch (err) {
         flash("dataMsg", "That file is not a Zero to Bar backup.");
       }

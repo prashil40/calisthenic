@@ -5,77 +5,97 @@
 (function () {
   "use strict";
 
-  /* ---------- movements & progression ladders ---------------------- */
+  /* ---------- movements & progression ladders ----------------------
+     Rungs carry a stable id, so a stored level survives the ladder
+     changing shape, and an optional `needs` naming the kit it requires.
+     Rungs you have no kit for are filtered out rather than shown and
+     blocked — the no-bar ladders below are real progressions, not
+     placeholders.                                                     */
   const MOVES = {
     push: {
       label: "Push", unit: "reps",
       ladder: [
-        { name: "Wall push-up",        cue: "Hands on a wall at chest height, body in one line. Chest to wall, elbows back at 45°." },
-        { name: "Incline push-up",     cue: "Hands on a table or kitchen counter. The lower the surface, the harder it gets." },
-        { name: "Knee push-up",        cue: "Knees down, hips forward so shoulders, hips and knees make one line. No piking." },
-        { name: "Full push-up",        cue: "Chest to the floor, elbows tucked to roughly 45°, glutes and ribs locked in." },
-        { name: "Diamond push-up",     cue: "Index fingers and thumbs touching under the sternum. Elbows brush the ribs." }
+        { id: "wall",    name: "Wall push-up",        cue: "Hands on a wall at chest height, body in one line. Chest to wall, elbows back at 45°." },
+        { id: "incline", name: "Incline push-up",     cue: "Hands on a table or kitchen counter. The lower the surface, the harder it gets." },
+        { id: "knee",    name: "Knee push-up",        cue: "Knees down, hips forward so shoulders, hips and knees make one line. No piking." },
+        { id: "full",    name: "Full push-up",        cue: "Chest to the floor, elbows tucked to roughly 45°, glutes and ribs locked in." },
+        { id: "diamond", name: "Diamond push-up",     cue: "Index fingers and thumbs touching under the sternum. Elbows brush the ribs." }
       ]
     },
     pull: {
       label: "Pull", unit: "reps",
       ladder: [
-        { name: "Doorframe row",       cue: "Hold a doorframe, feet close, lean back and pull your chest to your hands." },
-        { name: "Table row",           cue: "Under a sturdy table, heels on the floor, chest to the edge. Squeeze the shoulder blades." },
-        { name: "Inverted row",        cue: "Bar at hip height, body horizontal, heels on the floor. Chest touches the bar." },
-        { name: "Negative pull-up",    cue: "Jump to the top, chin over the bar, then lower for a full five-second count." },
-        { name: "Pull-up",             cue: "Dead hang to chin over the bar. Shoulders down and back before you pull." }
+        { id: "door",    name: "Doorframe row",       cue: "Hold a doorframe, feet close, lean back and pull your chest to your hands." },
+        { id: "table",   name: "Table row",           cue: "Under a sturdy table, heels on the floor, chest to the edge. Squeeze the shoulder blades." },
+        { id: "tablehi", name: "Table row, feet up",  cue: "Same row with your heels on a chair, so your body is level and the pull is much harder." },
+        { id: "inv",     name: "Inverted row",        cue: "Bar at hip height, body horizontal, heels on the floor. Chest touches the bar.", needs: "bar" },
+        { id: "onearm",  name: "One-arm table row",   cue: "One hand on the table edge, other arm across your chest. Pull your chest up on one side.", },
+        { id: "neg",     name: "Negative pull-up",    cue: "Jump to the top, chin over the bar, then lower for a full five-second count.", needs: "bar" },
+        { id: "pullup",  name: "Pull-up",             cue: "Dead hang to chin over the bar. Shoulders down and back before you pull.", needs: "bar" }
       ]
     },
     squat: {
       label: "Squat", unit: "reps",
       ladder: [
-        { name: "Box squat",           cue: "Sit to a chair, stand up without rocking. Knees track over the middle toes." },
-        { name: "Bodyweight squat",    cue: "Hip crease below the knee, heels planted, chest tall the whole way." },
-        { name: "Split squat",         cue: "Feet split front and back, back knee to the floor, weight on the front heel." },
-        { name: "Bulgarian split squat", cue: "Rear foot on a chair. Slow down, drive up through the front foot." },
-        { name: "Assisted pistol",     cue: "One leg out front, hold a doorframe for balance. Sit to a low box and stand." }
+        { id: "box",     name: "Box squat",           cue: "Sit to a chair, stand up without rocking. Knees track over the middle toes." },
+        { id: "bw",      name: "Bodyweight squat",    cue: "Hip crease below the knee, heels planted, chest tall the whole way." },
+        { id: "split",   name: "Split squat",         cue: "Feet split front and back, back knee to the floor, weight on the front heel." },
+        { id: "bulg",    name: "Bulgarian split squat", cue: "Rear foot on a chair. Slow down, drive up through the front foot." },
+        { id: "pistol",  name: "Assisted pistol",     cue: "One leg out front, hold a doorframe for balance. Sit to a low box and stand." }
       ]
     },
     hinge: {
       label: "Hinge", unit: "reps",
       ladder: [
-        { name: "Glute bridge",        cue: "Feet flat, drive through the heels, squeeze the glutes hard at the top." },
-        { name: "Single-leg bridge",   cue: "One foot down, other knee pulled in. Keep the hips perfectly level." },
-        { name: "Elevated hip thrust", cue: "Shoulders on a couch or bench, drive the hips to full lockout." },
-        { name: "Nordic negative",     cue: "Kneel with heels anchored, lower under control for as long as you can hold." }
+        { id: "bridge",  name: "Glute bridge",        cue: "Feet flat, drive through the heels, squeeze the glutes hard at the top." },
+        { id: "slbridge", name: "Single-leg bridge",  cue: "One foot down, other knee pulled in. Keep the hips perfectly level." },
+        { id: "thrust",  name: "Elevated hip thrust", cue: "Shoulders on a couch or bench, drive the hips to full lockout." },
+        { id: "nordic",  name: "Nordic negative",     cue: "Kneel with heels anchored, lower under control for as long as you can hold." }
       ]
     },
     dip: {
       label: "Dip", unit: "reps",
       ladder: [
-        { name: "Bench dip, knees bent", cue: "Hands on a chair behind you, feet close. Elbows straight back, not flared." },
-        { name: "Bench dip, legs straight", cue: "Same, heels out in front. Shoulders stay down away from the ears." },
-        { name: "Dip negative",        cue: "On parallel bars, start locked out and lower for five seconds. Step off, repeat." },
-        { name: "Parallel bar dip",    cue: "Slight forward lean, lower to upper arms parallel with the floor, press up." }
+        { id: "bknee",   name: "Bench dip, knees bent", cue: "Hands on a chair behind you, feet close. Elbows straight back, not flared." },
+        { id: "bstr",    name: "Bench dip, legs straight", cue: "Same, heels out in front. Shoulders stay down away from the ears." },
+        { id: "belev",   name: "Bench dip, feet up",  cue: "Heels on a second chair so your weight sits further back. Much harder." },
+        { id: "chair",   name: "Chair dip",           cue: "Two sturdy chairs as parallel bars. Slight forward lean, lower to parallel." },
+        { id: "dneg",    name: "Dip negative",        cue: "On parallel bars, start locked out and lower for five seconds. Step off, repeat.", needs: "dipbars" },
+        { id: "pbar",    name: "Parallel bar dip",    cue: "Slight forward lean, lower to upper arms parallel with the floor, press up.", needs: "dipbars" }
       ]
     },
     core: {
       label: "Core", unit: "sec",
       ladder: [
-        { name: "Plank on knees",      cue: "Forearms down, knees down, one line from shoulders to knees. Ribs tucked." },
-        { name: "Plank",               cue: "Forearms and toes. Squeeze glutes, tuck the ribs, do not let the hips sag." },
-        { name: "Hollow hold",         cue: "On your back, low back pressed flat, arms and legs off the floor." },
-        { name: "Hanging knee raise",  cue: "Hang from a bar, knees to chest without swinging. Count the hold at the top." },
-        { name: "Hanging leg raise",   cue: "Straight legs to bar height, slow all the way down. No kipping." }
+        { id: "kplank",  name: "Plank on knees",      cue: "Forearms down, knees down, one line from shoulders to knees. Ribs tucked." },
+        { id: "plank",   name: "Plank",               cue: "Forearms and toes. Squeeze glutes, tuck the ribs, do not let the hips sag." },
+        { id: "hollow",  name: "Hollow hold",         cue: "On your back, low back pressed flat, arms and legs off the floor." },
+        { id: "rock",    name: "Hollow rock",         cue: "Hold the hollow shape and rock gently head to heel. The shape never changes." },
+        { id: "kraise",  name: "Hanging knee raise",  cue: "Hang from a bar, knees to chest without swinging. Count the hold at the top.", needs: "bar" },
+        { id: "tuckl",   name: "Tuck L-sit on floor", cue: "Hands on the floor beside your hips, press down, lift your knees clear of the ground." },
+        { id: "lraise",  name: "Hanging leg raise",   cue: "Straight legs to bar height, slow all the way down. No kipping.", needs: "bar" }
       ]
     },
     side: {
       label: "Side", unit: "sec",
       ladder: [
-        { name: "Side plank on knees", cue: "Bottom knee bent, hips stacked and lifted. Hold both sides." },
-        { name: "Side plank",          cue: "Feet stacked, hips high, body in one straight line. Hold both sides." },
-        { name: "Side plank + reach",  cue: "Full side plank, thread the top arm under the body and back up." }
+        { id: "sknee",   name: "Side plank on knees", cue: "Bottom knee bent, hips stacked and lifted. Hold both sides." },
+        { id: "side",    name: "Side plank",          cue: "Feet stacked, hips high, body in one straight line. Hold both sides." },
+        { id: "reach",   name: "Side plank + reach",  cue: "Full side plank, thread the top arm under the body and back up." }
       ]
     }
   };
 
   const BASE = { push: 6, pull: 5, squat: 10, hinge: 10, dip: 6, core: 20, side: 15 };
+
+  /* ---------- kit ---------------------------------------------------
+     Defaults to nothing: everything works on a floor, a doorway, a
+     table and two chairs. Turning a piece of kit on unlocks the rungs
+     that need it.                                                     */
+  const GEAR = [
+    { id: "bar",     label: "Pull-up bar",   note: "A doorway bar, a park bar, or anything you can hang from." },
+    { id: "dipbars", label: "Parallel bars", note: "A dip station or park parallettes. Two sturdy chairs cover most of this already." }
+  ];
 
   /* ---------- per-variation coaching detail --------------------------
      Indexed to match each movement's ladder. `how` is setup and execution,
@@ -83,9 +103,15 @@
      `vids` mixes direct links with tuned YouTube searches; a search link
      is always valid, which a guessed video id would not be.            */
   const YT = "https://www.youtube.com/results?search_query=";
+
+  /* ---------- per-variation coaching detail --------------------------
+     Indexed to match each movement's ladder. `how` is setup and execution,
+     `watch` is [fault, fix] — the specific way beginners break this rep.
+     `vids` mixes direct links with tuned YouTube searches; a search link
+     is always valid, which a guessed video id would not be.            */
   const GUIDE = {
-    push: [
-      { how: ["Stand an arm's length from a wall, hands flat at chest height and a little wider than your shoulders.",
+    push: {
+      wall: { how: ["Stand an arm's length from a wall, hands flat at chest height and a little wider than your shoulders.",
               "Walk your feet back until your body is one straight line from heel to head.",
               "Bend the elbows and bring your chest to the wall, upper arms angling back at about 45° to your ribs.",
               "Press away until the arms are straight but not jammed at the elbow."],
@@ -94,7 +120,7 @@
                 ["Chin poking at the wall first", "Tuck the chin and let the chest arrive first."]],
         vids: [{ t: "The Perfect Push Up — Calisthenic Movement", url: "https://www.youtube.com/watch?v=IODxDxX7oi4" },
                { t: "Search: wall push-up form for beginners", q: "wall push up proper form beginners tutorial" }] },
-      { how: ["Put your hands on a stable waist-height surface — a kitchen counter, a windowsill, a heavy table.",
+      incline: { how: ["Put your hands on a stable waist-height surface — a kitchen counter, a windowsill, a heavy table.",
               "Step your feet back until your body is a straight line, weight through the hands.",
               "Lower until your chest touches the edge, elbows tracking back at roughly 45°.",
               "As it gets easy, drop to a lower surface: counter, then a chair, then a step, then the floor."],
@@ -103,7 +129,7 @@
                 ["Reps getting shorter as you fatigue", "Chest touches every rep or the rep does not count."]],
         vids: [{ t: "The Perfect Push Up — Calisthenic Movement", url: "https://www.youtube.com/watch?v=IODxDxX7oi4" },
                { t: "Search: incline push-up progression", q: "incline push up tutorial progression beginner" }] },
-      { how: ["Kneel with your hands under your shoulders, a little wider than shoulder width.",
+      knee: { how: ["Kneel with your hands under your shoulders, a little wider than shoulder width.",
               "Walk your knees back until shoulders, hips and knees form one line — push the hips forward to get there.",
               "Cross your ankles and lift the feet.",
               "Lower your chest to the floor over two to three seconds, press up in one."],
@@ -112,7 +138,7 @@
                 ["Sore kneecaps", "Fold a towel under them — this is not a knee-conditioning exercise."]],
         vids: [{ t: "The Perfect Push Up — Calisthenic Movement", url: "https://www.youtube.com/watch?v=IODxDxX7oi4" },
                { t: "Search: knee push-up correct form", q: "knee push up proper form common mistakes" }] },
-      { how: ["Hands under the shoulders and slightly wider, fingers spread, index fingers pointing forward.",
+      full: { how: ["Hands under the shoulders and slightly wider, fingers spread, index fingers pointing forward.",
               "Squeeze the glutes and pull the ribs down so your body is one rigid plank from heel to head.",
               "Lower over two to three seconds until your chest brushes the floor, elbows at about 45°.",
               "Press back up in about a second without letting the hips lead."],
@@ -122,7 +148,7 @@
         vids: [{ t: "The Perfect Push Up — Calisthenic Movement", url: "https://www.youtube.com/watch?v=IODxDxX7oi4" },
                { t: "Push Up Tutorial — the calisthenics way", url: "https://www.youtube.com/watch?v=qoZ6NGEq8_4" },
                { t: "Search: push-up mistakes and fixes", q: "push up common mistakes how to fix form" }] },
-      { how: ["Put your index fingers and thumbs together under your sternum so your hands form a triangle.",
+      diamond: { how: ["Put your index fingers and thumbs together under your sternum so your hands form a triangle.",
               "Set the same rigid plank as a full push-up.",
               "Lower until your chest touches your hands, elbows brushing past your ribs.",
               "Press up. Expect far fewer reps than a normal push-up — that is the point."],
@@ -131,9 +157,9 @@
                 ["Hands placed up under the chin", "Set them under the lower chest instead."]],
         vids: [{ t: "Search: diamond push-up form tutorial", q: "diamond push up proper form tutorial triceps" },
                { t: "Search: wrist prep for push-ups", q: "wrist warm up mobility routine before push ups" }] }
-    ],
-    pull: [
-      { how: ["Stand facing a doorframe with your feet close to it, gripping both sides at about chest height.",
+    },
+    pull: {
+      door: { how: ["Stand facing a doorframe with your feet close to it, gripping both sides at about chest height.",
               "Straighten your arms and lean back until they are taking your weight, body in one line.",
               "Pull your chest toward your hands, driving the shoulder blades together and down.",
               "Lower under control. Walk the feet forward to make it harder."],
@@ -141,7 +167,7 @@
                 ["Hips bending back", "Stay in one line from heel to head, as if standing up at an angle."],
                 ["Shoulders creeping toward the ears", "Pull them down away from the ears before you pull your body in."]],
         vids: [{ t: "Search: doorway row beginner back exercise", q: "doorway row bodyweight back exercise beginner no equipment" }] },
-      { how: ["Lie under a sturdy table, chest below the edge, and grip it with both hands.",
+      table: { how: ["Lie under a sturdy table, chest below the edge, and grip it with both hands.",
               "Bend your knees, heels on the floor, and hold your body straight from knee to head.",
               "Pull your chest to the edge of the table, shoulder blades squeezing together.",
               "Lower slowly. Straighten the legs out to make it harder."],
@@ -150,7 +176,16 @@
                 ["Chest never reaching the edge", "Shorten the range by walking the feet in, rather than doing partial reps."]],
         vids: [{ t: "Inverted Rows — beginner to advanced progressions", url: "https://www.youtube.com/watch?v=Fl0UMfdEzsE" },
                { t: "Search: table row at home", q: "table row bodyweight back exercise at home beginner" }] },
-      { how: ["Set a bar at about hip height — a low bar, a smith machine, or rings.",
+      tablehi: { how: ["Set up as for a table row, but put your heels on a chair so your body is level from shoulder to heel.",
+              "Grip the edge with straight arms and squeeze the glutes so you are one rigid line.",
+              "Pull your chest to the edge, driving the shoulder blades together and down.",
+              "Lower over two to three seconds."],
+        watch: [["Hips sagging toward the floor", "Squeeze the glutes. A level body is the whole reason this is harder than a table row."],
+                ["The chair sliding out from under your heels", "Put it against a wall before you start."],
+                ["Shoulders shrugging toward the ears", "Set the blades down and back before each pull."]],
+        vids: [{ t: "Inverted rows — beginner to advanced progressions", url: "https://www.youtube.com/watch?v=Fl0UMfdEzsE" },
+               { t: "Search: feet-elevated bodyweight row", q: "feet elevated inverted row bodyweight no bar tutorial" }] },
+      inv: { how: ["Set a bar at about hip height — a low bar, a smith machine, or rings.",
               "Hang underneath it with your body horizontal, heels on the floor, arms straight.",
               "Pull until your chest touches the bar, elbows tracking back past your ribs.",
               "Lower over two to three seconds. Raise the bar to make it easier, lower it to make it harder."],
@@ -160,7 +195,16 @@
         vids: [{ t: "Inverted Rows — beginner to advanced progressions", url: "https://www.youtube.com/watch?v=Fl0UMfdEzsE" },
                { t: "Get your first pull-up with inverted rows", url: "https://www.youtube.com/watch?v=eRxOKu_MiVE" },
                { t: "Search: inverted row form", q: "inverted row proper form tutorial progressions" }] },
-      { how: ["Set a box or step under the bar so you can start with your chin already over it.",
+      onearm: { how: ["Stand beside a sturdy table corner and take the edge with one hand.",
+              "Walk your feet forward and lean back until that arm is carrying your weight, body straight.",
+              "Pull your chest toward that hand, keeping both hip bones facing the ceiling.",
+              "Do all the reps, then swap sides. Walk the feet back in to make it easier."],
+        watch: [["Hips rotating open toward the free side", "Staying square is the entire difficulty — slow down until you can."],
+                ["The table tipping", "Work at a corner or leg, or use a doorframe instead."],
+                ["A sudden jump in difficulty", "This is roughly a negative pull-up in effort. Regress by walking the feet back."]],
+        vids: [{ t: "Search: one-arm bodyweight row progression", q: "one arm inverted row progression tutorial" },
+               { t: "Search: back training with no pull-up bar", q: "back workout no pull up bar bodyweight at home" }] },
+      neg: { how: ["Set a box or step under the bar so you can start with your chin already over it.",
               "Step or jump up to the top position and hold it for a second, shoulders pulled down.",
               "Lower yourself as slowly as you can — aim for a full five seconds.",
               "Step back up and repeat. You are training only the lowering half, which is where the strength comes from."],
@@ -169,7 +213,7 @@
                 ["Doing these every day", "They are demanding on the elbows — keep them to your pull sessions."]],
         vids: [{ t: "Get your first pull-up with inverted rows", url: "https://www.youtube.com/watch?v=eRxOKu_MiVE" },
                { t: "Search: negative pull-up tutorial", q: "negative pull up tutorial how to get first pull up" }] },
-      { how: ["Hang from the bar with an overhand grip a little wider than your shoulders.",
+      pullup: { how: ["Hang from the bar with an overhand grip a little wider than your shoulders.",
               "Before pulling, draw your shoulders down and back — the bar should feel like it moves away from your ears.",
               "Pull until your chin clears the bar, keeping your body still rather than kicking.",
               "Lower all the way to a straight-arm hang. That full hang is part of the rep."],
@@ -178,9 +222,9 @@
                 ["Chin stretching over instead of the chest rising", "Think about pulling your elbows to your ribs."]],
         vids: [{ t: "Get your first pull-up with inverted rows", url: "https://www.youtube.com/watch?v=eRxOKu_MiVE" },
                { t: "Search: pull-up tutorial proper form", q: "pull up tutorial proper form calisthenics beginner" }] }
-    ],
-    squat: [
-      { how: ["Stand in front of a chair, feet about shoulder width, toes turned slightly out.",
+    },
+    squat: {
+      box: { how: ["Stand in front of a chair, feet about shoulder width, toes turned slightly out.",
               "Push your hips back and sit down under control — no flopping onto the seat.",
               "Stand back up without rocking forward or using your hands.",
               "Use a lower seat as you get stronger."],
@@ -188,7 +232,7 @@
                 ["Knees caving inward", "Push them out so they track over your middle toes."],
                 ["Heels lifting", "Drive through the whole foot; if the heels still lift, try a slightly wider stance."]],
         vids: [{ t: "Search: box squat to chair beginner form", q: "box squat to chair beginner proper form bodyweight" }] },
-      { how: ["Feet about shoulder width, toes turned slightly out, arms out in front for balance.",
+      bw: { how: ["Feet about shoulder width, toes turned slightly out, arms out in front for balance.",
               "Push the hips back and down, keeping your chest tall.",
               "Go until your hip crease is below your knee, if your ankles and hips allow it.",
               "Drive up through the whole foot, squeezing the glutes at the top."],
@@ -197,7 +241,7 @@
                 ["Stopping high", "Depth is the whole point. If you cannot reach it, work on the deep squat hold on mobility days."]],
         vids: [{ t: "Search: bodyweight squat depth and form", q: "bodyweight squat proper form depth tutorial" },
                { t: "Search: ankle mobility for squat depth", q: "ankle mobility drills to squat deeper" }] },
-      { how: ["Step one foot forward into a long stance, feet about hip width apart side to side.",
+      split: { how: ["Step one foot forward into a long stance, feet about hip width apart side to side.",
               "Lower straight down until the back knee lightly touches the floor.",
               "Keep your weight on the front heel and your torso upright.",
               "Drive up through the front foot. Finish all reps on one side, then swap."],
@@ -205,7 +249,7 @@
                 ["Wobbling side to side", "Widen the gap between the feet — do not stand on a tightrope."],
                 ["Pushing off the back foot", "The back leg is a kickstand; the front leg does the work."]],
         vids: [{ t: "Search: split squat form tutorial", q: "split squat proper form tutorial beginner" }] },
-      { how: ["Put the top of your rear foot on a chair or bench behind you.",
+      bulg: { how: ["Put the top of your rear foot on a chair or bench behind you.",
               "Hop the front foot far enough forward that the shin stays close to vertical at the bottom.",
               "Lower under control until the front thigh is roughly parallel to the floor.",
               "Drive up through the front heel. Expect this to be much harder than it looks."],
@@ -215,7 +259,7 @@
         vids: [{ t: "Bulgarian split squat — beginner to advanced", url: "https://www.youtube.com/watch?v=rah3eJCPXHA" },
                { t: "Bulgarian split squat proper form", url: "https://www.youtube.com/watch?v=hiLF_pF3EJM" },
                { t: "Search: bulgarian split squat setup", q: "bulgarian split squat setup foot placement tutorial" }] },
-      { how: ["Stand on one leg beside a doorframe, holding it lightly with one hand for balance.",
+      pistol: { how: ["Stand on one leg beside a doorframe, holding it lightly with one hand for balance.",
               "Extend the other leg out in front, roughly straight.",
               "Sit back and down to a low box or chair, touch it, and stand back up on the same leg.",
               "Lower the box over time until you can do it with nothing behind you."],
@@ -223,9 +267,9 @@
                 ["Heel lifting off the floor", "Work ankle mobility; a slight heel raise underfoot is a fine interim fix."],
                 ["Knee pain", "Back off to Bulgarian split squats — this rung needs a base you may not have yet."]],
         vids: [{ t: "Search: pistol squat progression", q: "pistol squat progression beginner box assisted tutorial" }] }
-    ],
-    hinge: [
-      { how: ["Lie on your back, knees bent, feet flat and about hip width, heels close to your hips.",
+    },
+    hinge: {
+      bridge: { how: ["Lie on your back, knees bent, feet flat and about hip width, heels close to your hips.",
               "Drive through the heels and lift the hips until your body is a straight line from knee to shoulder.",
               "Squeeze the glutes hard at the top for a full second.",
               "Lower under control without letting the hips crash down."],
@@ -233,7 +277,7 @@
                 ["Feeling it in the hamstrings only", "Bring the heels closer to your hips."],
                 ["Rushing the top", "The squeeze at the top is the exercise."]],
         vids: [{ t: "Search: glute bridge form", q: "glute bridge proper form tutorial beginner" }] },
-      { how: ["Set up as for a glute bridge, then pull one knee toward your chest and hold it there.",
+      slbridge: { how: ["Set up as for a glute bridge, then pull one knee toward your chest and hold it there.",
               "Drive through the heel of the planted foot and lift the hips.",
               "Keep both hip bones level — do not let the free side drop.",
               "Complete all reps, then swap sides."],
@@ -241,7 +285,7 @@
                 ["Hamstring cramping", "Normal at first — shorten the range and build up."],
                 ["Pushing off the toes", "Drive through the heel."]],
         vids: [{ t: "Search: single leg glute bridge tutorial", q: "single leg glute bridge proper form tutorial" }] },
-      { how: ["Sit on the floor with your upper back against the edge of a couch or bench, knees bent, feet flat.",
+      thrust: { how: ["Sit on the floor with your upper back against the edge of a couch or bench, knees bent, feet flat.",
               "Tuck your chin and drive through the heels to lift the hips to full lockout.",
               "Squeeze the glutes hard at the top, ribs down.",
               "Lower until your hips almost touch the floor and go again."],
@@ -249,7 +293,7 @@
                 ["The bench sliding away", "Brace it against a wall."],
                 ["Feet too close in", "Shins should be roughly vertical at the top."]],
         vids: [{ t: "Search: hip thrust form without weight", q: "bodyweight hip thrust proper form tutorial couch" }] },
-      { how: ["Kneel on something padded with your heels anchored — under a heavy couch, or held by a partner.",
+      nordic: { how: ["Kneel on something padded with your heels anchored — under a heavy couch, or held by a partner.",
               "Keep your body in one line from knee to head, ribs down, glutes on.",
               "Lower forward as slowly as you can, resisting the whole way.",
               "Catch yourself with your hands, push back to the start, and repeat."],
@@ -259,9 +303,9 @@
         vids: [{ t: "The ultimate Nordic curl progression", url: "https://www.youtube.com/watch?v=LWfqK8-w1J4" },
                { t: "A 7-step Nordic curl progression", url: "https://www.youtube.com/watch?v=QCVces5NcPc" },
                { t: "Search: nordic curl at home setup", q: "nordic hamstring curl at home anchor feet setup beginner" }] }
-    ],
-    dip: [
-      { how: ["Sit on the edge of a sturdy chair, hands beside your hips gripping the edge.",
+    },
+    dip: {
+      bknee: { how: ["Sit on the edge of a sturdy chair, hands beside your hips gripping the edge.",
               "Slide your hips forward off the seat, knees bent and feet flat, close to the chair.",
               "Lower by bending the elbows straight back until your upper arms are about parallel to the floor.",
               "Press back up without locking the elbows hard."],
@@ -270,7 +314,7 @@
                 ["Going far too deep", "Stop at about parallel; deeper puts the shoulder in a bad spot."]],
         vids: [{ t: "Bench dip tutorial", url: "https://www.youtube.com/watch?v=M_s88yMWTYI" },
                { t: "Search: bench dip form beginners", q: "bench dip proper form beginners tutorial triceps" }] },
-      { how: ["Same setup as the knees-bent bench dip, but walk your heels out until the legs are straight.",
+      bstr: { how: ["Same setup as the knees-bent bench dip, but walk your heels out until the legs are straight.",
               "Keep your hips close to the chair as you lower.",
               "Lower to about parallel, elbows tracking straight back.",
               "Press up. Elevating the heels on a second chair makes it harder again."],
@@ -279,7 +323,25 @@
                 ["Wrist discomfort", "Grip the edge rather than flattening the palms, or move to parallel bars sooner."]],
         vids: [{ t: "Bench dip tutorial", url: "https://www.youtube.com/watch?v=M_s88yMWTYI" },
                { t: "Search: bench dip progression", q: "bench dip progression legs elevated tutorial" }] },
-      { how: ["On parallel bars, jump or step up to the top with your arms straight, leaning slightly forward.",
+      belev: { how: ["Hands on the chair behind you as for a bench dip.",
+              "Put your heels on a second chair so your legs are level with your hips.",
+              "Lower until your upper arms are about parallel to the floor, elbows tracking straight back.",
+              "Press up without locking the elbows hard."],
+        watch: [["Shoulders rolling forward and up", "Keep the chest open and press the shoulders down."],
+                ["Dropping below parallel", "The front of the shoulder pays for the extra depth."],
+                ["Hips drifting away from the chair", "Keep them brushing the edge the whole way down."]],
+        vids: [{ t: "Bench dip tutorial", url: "https://www.youtube.com/watch?v=M_s88yMWTYI" },
+               { t: "Search: feet-elevated bench dip", q: "feet elevated bench dip proper form tutorial" }] },
+      chair: { how: ["Set two sturdy chairs facing each other, seats about shoulder width apart.",
+              "Load them with your full weight before you trust them — this is the step people skip.",
+              "Support yourself on straight arms, ankles crossed, leaning slightly forward.",
+              "Lower until your upper arms are roughly parallel, then press back up."],
+        watch: [["Chairs sliding apart", "Set them on carpet or against a wall, and re-test them every session."],
+                ["A bolt-upright torso", "A slight forward lean is correct and keeps the shoulder safe."],
+                ["Elbows flaring wide", "Keep them tracking back behind you."]],
+        vids: [{ t: "Beginners dips tutorial — progressions and mistakes", url: "https://www.youtube.com/watch?v=nHRrW_JSru8" },
+               { t: "Search: chair dips at home", q: "chair dips at home proper form two chairs tutorial" }] },
+      dneg: { how: ["On parallel bars, jump or step up to the top with your arms straight, leaning slightly forward.",
               "Pull the shoulders down away from the ears and hold for a second.",
               "Lower yourself as slowly as you can — aim for five seconds — until the upper arms are parallel.",
               "Step off, climb back to the top, and repeat."],
@@ -288,7 +350,7 @@
                 ["Pain at the front of the shoulder", "Stop. Go back to bench dips and build more base first."]],
         vids: [{ t: "Beginners dips tutorial — progressions and mistakes", url: "https://www.youtube.com/watch?v=nHRrW_JSru8" },
                { t: "Search: dip negatives tutorial", q: "dip negatives tutorial first parallel bar dip progression" }] },
-      { how: ["Support yourself at the top of parallel bars, arms straight, body leaning slightly forward.",
+      pbar: { how: ["Support yourself at the top of parallel bars, arms straight, body leaning slightly forward.",
               "Lower under control until your upper arms are roughly parallel to the floor.",
               "Keep the elbows tracking back rather than flaring wide.",
               "Press up to straight arms without shrugging."],
@@ -298,9 +360,9 @@
         vids: [{ t: "Beginners dips tutorial — progressions and mistakes", url: "https://www.youtube.com/watch?v=nHRrW_JSru8" },
                { t: "How to do parallel bar dips", url: "https://www.youtube.com/watch?v=U7HeutDqS_w" },
                { t: "Search: dip form mistakes", q: "parallel bar dip proper form common mistakes shoulder" }] }
-    ],
-    core: [
-      { how: ["Set your forearms on the floor, elbows under the shoulders, knees down.",
+    },
+    core: {
+      kplank: { how: ["Set your forearms on the floor, elbows under the shoulders, knees down.",
               "Walk the knees back until you make one straight line from shoulders to knees.",
               "Pull the ribs down, squeeze the glutes, and hold.",
               "Breathe normally throughout — do not hold your breath."],
@@ -308,7 +370,7 @@
                 ["Holding your breath", "If you cannot breathe, you are bracing too hard."],
                 ["Shoulders creeping toward the ears", "Push the floor away and keep the neck long."]],
         vids: [{ t: "Search: plank form common mistakes", q: "plank proper form common mistakes tutorial" }] },
-      { how: ["Forearms on the floor, elbows directly under the shoulders, feet back on the toes.",
+      plank: { how: ["Forearms on the floor, elbows directly under the shoulders, feet back on the toes.",
               "Make one straight line from heel to head — no sag, no pike.",
               "Squeeze the glutes and pull the ribs down as if bracing for a punch.",
               "Hold and breathe. Stop the moment the line breaks."],
@@ -317,7 +379,7 @@
                 ["Chasing longer times with a broken shape", "Thirty honest seconds beats two sloppy minutes."]],
         vids: [{ t: "Search: plank form common mistakes", q: "plank proper form common mistakes tutorial" },
                { t: "Search: how long should you plank", q: "how long should you hold a plank form over time" }] },
-      { how: ["Lie on your back, arms overhead, legs straight.",
+      hollow: { how: ["Lie on your back, arms overhead, legs straight.",
               "Press your low back flat into the floor and keep it there — this is the whole exercise.",
               "Lift your arms, head and legs a few inches off the floor into a shallow banana shape.",
               "If the back lifts, raise the legs higher or tuck the knees until it stays flat."],
@@ -326,7 +388,16 @@
                 ["Expecting plank-like times", "Twenty seconds here is a good hold. It is much harder than a plank."]],
         vids: [{ t: "Search: hollow body hold tutorial", q: "hollow body hold tutorial proper form regression" },
                { t: "Search: hollow hold regressions", q: "hollow hold easier regression tuck variation beginner" }] },
-      { how: ["Hang from a bar with straight arms, shoulders pulled down away from your ears.",
+      rock: { how: ["Get into a hollow hold: low back pressed flat, arms overhead, legs off the floor.",
+              "Without changing that shape at all, rock gently from your shoulders to your heels.",
+              "The motion comes from a small push, never from bending at the hips.",
+              "Count the seconds you can keep rocking with the shape intact."],
+        watch: [["The banana shape folding up mid-rock", "Stop the set. A rock with a broken shape trains nothing."],
+                ["Low back lifting off the floor", "Raise the legs higher until it presses flat again."],
+                ["Rocking by bending at the hips", "The whole body moves as one piece, like a rocking chair."]],
+        vids: [{ t: "Search: hollow rock tutorial", q: "hollow rock tutorial proper form gymnastics core" },
+               { t: "Search: hollow body progression", q: "hollow body hold progression beginner to advanced" }] },
+      kraise: { how: ["Hang from a bar with straight arms, shoulders pulled down away from your ears.",
               "Without swinging, raise both knees toward your chest.",
               "Pause at the top and count the hold there.",
               "Lower slowly and under control — no dropping and rebounding."],
@@ -334,7 +405,16 @@
                 ["Grip failing before the abs", "Use straps, or build grip with dead hangs on mobility days."],
                 ["Only the hip flexors working", "Curl the pelvis slightly at the top rather than just lifting the thighs."]],
         vids: [{ t: "Search: hanging knee raise tutorial", q: "hanging knee raise proper form tutorial no swinging" }] },
-      { how: ["Dead hang from the bar, shoulders down and back, legs straight and together.",
+      tuckl: { how: ["Sit with your knees bent and your hands flat on the floor beside your hips, fingers pointing forward.",
+              "Press down hard through straight arms and pull your shoulders down away from your ears.",
+              "Lift your hips, then tuck your knees up so your feet clear the floor.",
+              "Hold. Hands on books or blocks buys you height and makes it far easier at first."],
+        watch: [["Feet that will not leave the floor", "Put your hands on two stacks of books — almost everyone needs this at first."],
+                ["Shoulders shrugged up by your ears", "Push the floor away and down; the lift comes from there, not the arms."],
+                ["Wrist pain", "Use fists, or parallel handles if you have them."]],
+        vids: [{ t: "Search: tuck L-sit progression", q: "tuck l sit progression floor beginner tutorial" },
+               { t: "Search: L-sit for beginners", q: "l sit beginner tutorial progression at home" }] },
+      lraise: { how: ["Dead hang from the bar, shoulders down and back, legs straight and together.",
               "Raise the legs, keeping them straight, until your toes reach bar height if you can.",
               "Lower slowly with no swing at all.",
               "Count the time under control rather than the reps."],
@@ -342,9 +422,9 @@
                 ["Knees bending as you tire", "Switch back to knee raises for the rest of the set."],
                 ["Low back arching at the bottom", "Keep the pelvis slightly tucked throughout."]],
         vids: [{ t: "Search: hanging leg raise tutorial", q: "hanging leg raise proper form tutorial strict" }] }
-    ],
-    side: [
-      { how: ["Lie on your side, forearm on the floor with the elbow under your shoulder, knees bent behind you.",
+    },
+    side: {
+      sknee: { how: ["Lie on your side, forearm on the floor with the elbow under your shoulder, knees bent behind you.",
               "Lift your hips so you make a straight line from knee to head.",
               "Stack the hips squarely on top of each other.",
               "Hold, breathe, then do the same on the other side. Both sides count as one set."],
@@ -352,7 +432,7 @@
                 ["Hips dropping as you tire", "That is the end of the hold."],
                 ["Elbow ahead of or behind the shoulder", "Put it directly underneath."]],
         vids: [{ t: "Search: side plank on knees tutorial", q: "side plank knees modified proper form beginner" }] },
-      { how: ["Lie on your side, elbow under your shoulder, legs straight with the feet stacked.",
+      side: { how: ["Lie on your side, elbow under your shoulder, legs straight with the feet stacked.",
               "Lift the hips into one straight line from heel to head.",
               "Keep the top hip stacked over the bottom one, not rotated toward the floor.",
               "Hold, then repeat on the other side."],
@@ -360,7 +440,7 @@
                 ["Body rotating forward", "Square the shoulders and hips; imagine your back against a wall."],
                 ["Stacking the feet feeling impossible", "Put the top foot on the floor in front instead — that is a fine variation."]],
         vids: [{ t: "Search: side plank proper form", q: "side plank proper form tutorial common mistakes" }] },
-      { how: ["Start in a full side plank with the top arm reaching toward the ceiling.",
+      reach: { how: ["Start in a full side plank with the top arm reaching toward the ceiling.",
               "Keeping the hips high, thread the top arm under your body, rotating the ribcage.",
               "Reverse the motion and reach back up to the ceiling.",
               "Move slowly — count the reps, not the time."],
@@ -368,12 +448,15 @@
                 ["Rushing the movement", "Two seconds under, two seconds back."],
                 ["Losing the line", "If the shape breaks, go back to the plain side plank for that set."]],
         vids: [{ t: "Search: side plank thread the needle", q: "side plank thread the needle rotation exercise tutorial" }] }
-    ]
+    }
   };
-  function guide(move, lvl) { return (GUIDE[move] || [])[lvl] || null; }
+  function guide(move, id) { return (GUIDE[move] || {})[id] || null; }
 
 
-  /* ---------- sessions --------------------------------------------- */
+  /* ---------- sessions ---------------------------------------------
+     Recovery-day items carry the same shape of detail as an exercise,
+     so a mobility day is something you can learn rather than a list of
+     names you tick. `needs` / `unless` swap items on your kit.        */
   const SESSIONS = {
     A: { name: "Session A", focus: "Push emphasis",
          blocks: [{ m: "push", sets: 3 }, { m: "dip", sets: 3 }, { m: "squat", sets: 3 }, { m: "core", sets: 3 }] },
@@ -383,19 +466,100 @@
          blocks: [{ m: "squat", sets: 4 }, { m: "hinge", sets: 3 }, { m: "core", sets: 3 }, { m: "pull", sets: 2 }] },
     M: { name: "Mobility", focus: "Active recovery",
          checks: [
-           ["Dead hang", "Hang from a bar, shoulders relaxed. Two sets, as long as the grip holds."],
-           ["Deep squat hold", "Sit in the bottom of a squat, heels down, elbows pushing the knees out. Two minutes total."],
-           ["Shoulder pass-through", "Broomstick or towel, wide grip, over the head and back. Twenty slow reps."],
-           ["Cat-cow and thoracic rotation", "Ten slow rounds on all fours, then ten rotations per side."],
-           ["Couch stretch", "Rear foot up on a couch, hips square, squeeze the glute. Ninety seconds a side."],
-           ["Wrist prep", "Palms down then palms up on the floor, rock gently. One minute. Do this before every push day."]
+           { id: "hang", t: "Dead hang", d: "Two sets, as long as the grip holds.", needs: "bar",
+             why: "Decompresses the spine and stretches the lats and shoulders in the exact position a pull-up demands. It also builds the grip that fails before your back does.",
+             how: ["Take an overhand grip a little wider than your shoulders and step off.",
+                   "Let the shoulders rise toward your ears and simply hang — this is a passive hang.",
+                   "Breathe slowly. Aim for thirty seconds, twice, and build from there.",
+                   "Step down under control rather than dropping."],
+             watch: [["Shoulder pain while hanging", "Come down. Build up with a doorway lat opener first."],
+                     ["Grip failing in seconds", "Normal at the start. Do more shorter hangs rather than fewer long ones."]],
+             vids: [{ t: "Search: dead hang benefits and how to", q: "dead hang tutorial benefits how long beginner" }] },
+           { id: "doorhang", t: "Doorway lat opener", d: "The no-bar stand-in for a dead hang. Ninety seconds a side.", unless: "bar",
+             why: "Opens the lats and the front of the shoulder without needing anything to hang from, which is most of what a dead hang gives a beginner.",
+             how: ["Take a doorframe with one hand at about head height.",
+                   "Step through slightly and sink your hips back and away from that hand.",
+                   "Let your ribs rotate open until you feel a long stretch down the side of your back.",
+                   "Breathe into it for ninety seconds, then swap sides."],
+             watch: [["Pinching at the front of the shoulder", "Lower your hand and turn your chest more toward the door."],
+                     ["Holding your breath", "The stretch only releases when you breathe out slowly into it."]],
+             vids: [{ t: "Search: doorway lat stretch", q: "doorway lat stretch shoulder opener tutorial" }] },
+           { id: "squat", t: "Deep squat hold", d: "Two minutes total, broken up however you like.",
+             why: "The bottom of a squat is a position most adults have lost. Sitting in it restores the ankle and hip range that squat depth depends on.",
+             how: ["Sink into the bottom of a squat with your heels down and feet a little wider than your shoulders.",
+                   "Put your elbows inside your knees and push them gently outward.",
+                   "Keep your chest up and your weight through the whole foot.",
+                   "Hold. Two minutes in total — thirty seconds at a time is fine."],
+             watch: [["Heels lifting off the floor", "Put a rolled towel or a book under them, and widen your stance."],
+                     ["Toppling backwards", "Hold a doorframe and let it take some weight until the range comes back."]],
+             vids: [{ t: "Search: deep squat hold mobility", q: "deep squat hold mobility drill ankle hip beginner" }] },
+           { id: "shoulder", t: "Shoulder pass-through", d: "Twenty slow reps with a broomstick or towel.",
+             why: "Restores overhead range and warms the shoulder capsule, which is what protects you in dips, push-ups and hangs.",
+             how: ["Hold a broomstick or a towel with a very wide overhand grip.",
+                   "Keep the arms straight and lift it over your head and behind you.",
+                   "Go only as far as you can without bending the elbows, then return.",
+                   "Twenty slow reps. Narrow the grip a little as the range improves."],
+             watch: [["Elbows bending to get it round", "Widen the grip. Bending is the range cheating."],
+                     ["Ribs flaring as it goes overhead", "Keep the ribs down; the movement comes from the shoulders."]],
+             vids: [{ t: "Search: shoulder dislocates with a stick", q: "shoulder pass through dislocates stick mobility tutorial" }] },
+           { id: "catcow", t: "Cat-cow and thoracic rotation", d: "Ten rounds, then ten rotations per side.",
+             why: "Gets the mid-back moving. A stiff thoracic spine is why many people cannot keep a flat back in planks and rows.",
+             how: ["On all fours, alternately round and arch your back through a full slow range — ten rounds.",
+                   "Then put one hand behind your head, elbow out.",
+                   "Rotate that elbow down under your body, then open it up toward the ceiling.",
+                   "Ten per side, following the elbow with your eyes."],
+             watch: [["Moving only at the low back", "Aim the movement between the shoulder blades."],
+                     ["Rushing", "Two seconds each way. This is not a rep to get through."]],
+             vids: [{ t: "Search: thoracic rotation drill", q: "cat cow thoracic rotation mobility drill tutorial" }] },
+           { id: "couch", t: "Couch stretch", d: "Ninety seconds a side.",
+             why: "Opens the hip flexors, which shorten from sitting and quietly limit both squat depth and glute bridge lockout.",
+             how: ["Kneel in front of a couch and put the top of your rear foot up on it.",
+                   "Bring the other foot forward and flat, in a lunge.",
+                   "Square your hips and squeeze the glute on the kneeling side — this is what makes it work.",
+                   "Stay tall and breathe for ninety seconds, then swap."],
+             watch: [["Low back arching to get upright", "Tuck the pelvis and squeeze the glute; come out of the stretch a little."],
+                     ["Sore kneecap", "Pad the knee with a cushion."]],
+             vids: [{ t: "Search: couch stretch hip flexor", q: "couch stretch hip flexor tutorial proper form" }] },
+           { id: "wrist", t: "Wrist prep", d: "One minute. Do this before every pushing day.",
+             why: "Wrist and elbow pain is what ends most beginner calisthenics runs — far more often than muscle soreness. One minute prevents most of it.",
+             how: ["On all fours, put your palms flat with the fingers pointing forward, and rock gently forward and back.",
+                   "Turn the hands so the fingers point back toward your knees, and rock again, gently.",
+                   "Then flip to the backs of the hands and rock very lightly.",
+                   "About twenty seconds in each position. Never push into pain."],
+             watch: [["Sharp pain in the wrist joint", "Reduce the range hard. This is preparation, not a stretch to win."],
+                     ["Skipping it on push days", "That is exactly when it matters."]],
+             vids: [{ t: "Search: wrist warm up for calisthenics", q: "wrist warm up mobility routine calisthenics push ups" }] }
          ] },
     R: { name: "Rest", focus: "Full rest",
          checks: [
-           ["Rest taken", "Nothing to prove today. Growth happens now, not during the sets."],
-           ["Slept seven hours or more", "The single biggest lever on how fast you progress."],
-           ["Ate enough protein", "Roughly 1.6 g per kg of bodyweight. Strength needs material to build with."],
-           ["Walked", "Twenty to thirty easy minutes keeps blood moving without adding fatigue."]
+           { id: "rest", t: "Rest taken", d: "Nothing to prove today.",
+             why: "Training is the stimulus; the adaptation happens now. Skipping rest days is the most common way beginners stall or get hurt.",
+             how: ["Do no strength work today.",
+                   "Gentle movement is fine — a walk, easy stretching, playing a sport for fun.",
+                   "If you feel compelled to train, that is usually a sign the rest is needed."],
+             watch: [["Sneaking in 'just a few' push-ups", "Consistency across weeks beats squeezing in one more session."]],
+             vids: [] },
+           { id: "sleep", t: "Slept seven hours or more", d: "The biggest single lever on progress.",
+             why: "Most strength adaptation and tissue repair happens during sleep. Under-sleeping blunts progress more than any programming mistake.",
+             how: ["Aim for seven to nine hours.",
+                   "Keep the wake time steady; that anchors the whole rhythm.",
+                   "If a session felt unusually heavy, look at last night before blaming the program."],
+             watch: [["Chasing harder training on poor sleep", "Reduce the sets instead. Fatigue you cannot recover from is not training."]],
+             vids: [] },
+           { id: "protein", t: "Ate enough protein", d: "Roughly 1.6 g per kg of bodyweight.",
+             why: "Strength needs material to build with. Bodyweight training is no exception, even though nothing is being lifted but you.",
+             how: ["Aim for roughly 1.6 grams per kilogram of bodyweight across the day.",
+                   "Spread it over your meals rather than loading it into one.",
+                   "Any source counts — this is about the daily total, not timing."],
+             watch: [["Training hard while eating far too little", "You will feel it as stalled reps before you see it anywhere else."]],
+             vids: [] },
+           { id: "walk", t: "Walked", d: "Twenty to thirty easy minutes.",
+             why: "Easy movement keeps blood moving through sore tissue without adding fatigue, and it tends to leave you less stiff tomorrow.",
+             how: ["Twenty to thirty minutes at a conversational pace.",
+                   "Outdoors if you can.",
+                   "This should feel restorative. If it feels like training, slow down."],
+             watch: [["Turning the walk into a workout", "That defeats the point of the day."]],
+             vids: [] }
          ] }
   };
 
@@ -439,7 +603,49 @@
 
   /* ---------- state ------------------------------------------------- */
   const KEY = "ztb.v1";
-  const DEFAULT_LEVELS = { push: 1, pull: 1, squat: 1, hinge: 0, dip: 0, core: 1, side: 1 };
+  const DEFAULT_LEVELS = { push: "incline", pull: "table", squat: "bw",
+                           hinge: "bridge", dip: "bknee", core: "plank", side: "side" };
+  const DEFAULT_GEAR = { bar: false, dipbars: false };
+
+  // Levels used to be an index into the ladder, and checks a positional
+  // array. Both broke the moment a ladder changed shape, so both are keyed
+  // by stable id now. These are the orders those indices used to mean.
+  const LEGACY_RUNGS = {
+    push: ["wall", "incline", "knee", "full", "diamond"],
+    pull: ["door", "table", "inv", "neg", "pullup"],
+    squat: ["box", "bw", "split", "bulg", "pistol"],
+    hinge: ["bridge", "slbridge", "thrust", "nordic"],
+    dip: ["bknee", "bstr", "dneg", "pbar"],
+    core: ["kplank", "plank", "hollow", "kraise", "lraise"],
+    side: ["sknee", "side", "reach"]
+  };
+  const LEGACY_CHECKS = {
+    M: ["hang", "squat", "shoulder", "catcow", "couch", "wrist"],
+    R: ["rest", "sleep", "protein", "walk"]
+  };
+
+  function migrate(st) {
+    const lv = {};
+    for (const m in DEFAULT_LEVELS) {
+      const v = (st.levels || {})[m];
+      lv[m] = typeof v === "number" ? (LEGACY_RUNGS[m][v] || DEFAULT_LEVELS[m])
+            : (typeof v === "string" ? v : DEFAULT_LEVELS[m]);
+    }
+    st.levels = lv;
+    st.gear = Object.assign({}, DEFAULT_GEAR, st.gear || {});
+    for (const d in st.log || {}) {
+      const e = st.log[d];
+      if (Array.isArray(e.checks)) {
+        const order = LEGACY_CHECKS[e.type] || [];
+        const o = {};
+        e.checks.forEach((on, i) => { if (on && order[i]) o[order[i]] = true; });
+        e.checks = o;
+      } else if (!e.checks || typeof e.checks !== "object") {
+        e.checks = {};
+      }
+    }
+    return st;
+  }
 
   let state = load();
   let cursor = ymd(new Date());
@@ -451,15 +657,15 @@
       try {
         const s = JSON.parse(raw);
         if (s && s.log) {
-          s.levels = Object.assign({}, DEFAULT_LEVELS, s.levels || {});
           s.theme = s.theme || "auto";
           s.pu = s.pu || 0;
           s.syncedAt = s.syncedAt || 0;
-          return s;
+          return migrate(s);
         }
       } catch (e) { /* corrupt — fall through to a fresh state */ }
     }
-    return { v: 1, start: ymd(new Date()), levels: Object.assign({}, DEFAULT_LEVELS), log: {},
+    return { v: 1, start: ymd(new Date()), levels: Object.assign({}, DEFAULT_LEVELS),
+             gear: Object.assign({}, DEFAULT_GEAR), log: {},
              theme: "auto", u: 0, pu: 0, syncedAt: 0 };
   }
   function save() {
@@ -470,9 +676,34 @@
   /* ---------- program maths ---------------------------------------- */
   function weekOf(date) { return Math.max(1, Math.floor(daysBetween(state.start, date) / 7) + 1); }
   function planFor(date) { return DAY_PLAN[parseYMD(date).getDay()]; }
+  // Rungs you have no kit for are filtered out of the ladder entirely.
+  function avail(move) {
+    return MOVES[move].ladder.filter((r) => !r.needs || state.gear[r.needs]);
+  }
   function rung(move) {
-    const l = MOVES[move].ladder;
-    return l[Math.min(Math.max(state.levels[move] | 0, 0), l.length - 1)];
+    const list = avail(move), want = state.levels[move];
+    const hit = list.find((r) => r.id === want);
+    if (hit) return hit;
+    // The stored rung needs kit that is switched off. Drop to the hardest
+    // available rung BELOW it — never silently promote anyone.
+    const full = MOVES[move].ladder;
+    const wi = full.findIndex((r) => r.id === want);
+    for (let i = (wi < 0 ? full.length : wi) - 1; i >= 0; i--) {
+      if (!full[i].needs || state.gear[full[i].needs]) return full[i];
+    }
+    return list[0] || full[0];
+  }
+  function nextRung(move) {
+    const list = avail(move);
+    const i = list.findIndex((r) => r.id === rung(move).id);
+    return i >= 0 && i < list.length - 1 ? list[i + 1] : null;
+  }
+  function lockedCount(move) {
+    return MOVES[move].ladder.length - avail(move).length;
+  }
+  function visibleChecks(S) {
+    return (S.checks || []).filter((c) =>
+      (!c.needs || state.gear[c.needs]) && (!c.unless || !state.gear[c.unless]));
   }
   function target(move, date) {
     const step = Math.floor((weekOf(date) - 1) / 2);
@@ -484,7 +715,7 @@
     if (!e) return false;
     if (e.manual) return true;
     if (e.sets) for (const k in e.sets) if (e.sets[k].some((v) => v > 0)) return true;
-    if (e.checks) return e.checks.some(Boolean);
+    if (e.checks) return Object.keys(e.checks).some((k) => e.checks[k]);
     return false;
   }
   function volume(e) {
@@ -541,7 +772,7 @@
   }
   // Two consecutive sessions where every set cleared the target by 2 → step up.
   function readyToLevel(move) {
-    if (state.levels[move] >= MOVES[move].ladder.length - 1) return false;
+    if (!nextRung(move)) return false;
     const days = Object.keys(state.log).sort()
       .filter((k) => state.log[k].sets && state.log[k].sets[move] && state.log[k].sets[move].some((v) => v > 0))
       .slice(-2);
@@ -625,8 +856,10 @@
         ' data-move="' + b.m + '" data-set="' + i + '" value="' + v + '" placeholder="' + tgt + '"' +
         ' aria-label="' + esc(r.name) + ' set ' + (i + 1) + ' — ' + unit + '">';
     }
-    const opts = M.ladder.map((x, i) =>
-      '<option value="' + i + '"' + (i === state.levels[b.m] ? " selected" : "") + ">" + (i + 1) + ". " + esc(x.name) + "</option>").join("");
+    const list = avail(b.m);
+    const opts = list.map((x, i) =>
+      '<option value="' + x.id + '"' + (x.id === r.id ? " selected" : "") + ">" + (i + 1) + ". " + esc(x.name) + "</option>").join("");
+    const locked = lockedCount(b.m);
 
     return '<div class="ex">' +
       '<div class="ex-head"><div>' +
@@ -639,13 +872,14 @@
       '<div class="ex-ctl">' + inputs +
         '<span class="lvl"><label for="lvl-' + b.m + '">Rung</label>' +
         '<select id="lvl-' + b.m + '" data-lvl="' + b.m + '">' + opts + "</select></span>" +
-      "</div>" + detailPanel(b.m, state.levels[b.m]) + "</div>";
+        (locked ? "<span class='locked'>" + locked + " more with kit</span>" : "") +
+      "</div>" + detailPanel(b.m, r.id) + "</div>";
   }
 
   function vidHref(v) { return v.url || (YT + encodeURIComponent(v.q)); }
 
-  function detailBody(move, lvl) {
-    const g = guide(move, lvl);
+  function detailBody(move, id) {
+    const g = guide(move, id);
     if (!g) return "";
     return "<p class='eyebrow'>Setup and execution</p><ol class='howto'>"
       + g.how.map((x) => "<li>" + esc(x) + "</li>").join("")
@@ -657,8 +891,8 @@
       + "</ul>";
   }
 
-  function detailPanel(move, lvl) {
-    const body = detailBody(move, lvl);
+  function detailPanel(move, id) {
+    const body = detailBody(move, id);
     if (!body) return "";
     return "<details class='exdet'><summary>How to do it</summary>"
       + "<div class='exdet-body'>" + body + "</div></details>";
@@ -667,18 +901,44 @@
   // The text is deliberately NOT a <label>: wrapping the row in one made
   // the whole block a toggle target, so brushing the description while
   // scrolling flipped the box. aria-labelledby keeps the accessible name
-  // without making the text clickable.
+  // without making the text clickable. Detail lives behind its own button
+  // on the right, so the only thing that ticks the box is the box.
   function checklistRows(S, e) {
-    return S.checks.map((c, i) =>
-      '<div class="check"><input type="checkbox" id="chk' + i + '" data-chk="' + i + '"' +
-      ' aria-labelledby="chkt' + i + '"' + (e.checks && e.checks[i] ? " checked" : "") + '>' +
-      '<div class="check-text"><span class="t" id="chkt' + i + '">' + esc(c[0]) + '</span>' +
-      '<span class="d">' + esc(c[1]) + "</span></div></div>").join("");
+    const done = e.checks || {};
+    return visibleChecks(S).map((c) => {
+      const has = (c.how && c.how.length) || c.why || (c.vids && c.vids.length);
+      return '<div class="check">' +
+        '<input type="checkbox" id="chk-' + c.id + '" data-chk="' + c.id + '"' +
+          ' aria-labelledby="chkt-' + c.id + '"' + (done[c.id] ? " checked" : "") + ">" +
+        '<div class="check-main"><div class="check-head">' +
+          '<div class="check-text"><span class="t" id="chkt-' + c.id + '">' + esc(c.t) + "</span>" +
+          '<span class="d">' + esc(c.d) + "</span></div>" +
+          (has ? '<button type="button" class="expand" data-exp="' + c.id + '"' +
+                 ' aria-expanded="false" aria-controls="det-' + c.id + '">Details</button>' : "") +
+        "</div>" +
+        (has ? '<div class="mobdet" id="det-' + c.id + '" hidden>' + recoveryDetail(c) + "</div>" : "") +
+        "</div></div>";
+    }).join("");
   }
 
-  // Every write stamps the day so two devices can be merged by recency.
+  function recoveryDetail(c) {
+    let h = "";
+    if (c.why) h += "<p class='eyebrow'>Why this is here</p><p class='why'>" + esc(c.why) + "</p>";
+    if (c.how && c.how.length)
+      h += "<p class='eyebrow'>How to do it</p><ol class='howto'>"
+         + c.how.map((x) => "<li>" + esc(x) + "</li>").join("") + "</ol>";
+    if (c.watch && c.watch.length)
+      h += "<p class='eyebrow'>Watch for</p><ul class='faults'>"
+         + c.watch.map((w) => "<li><b>" + esc(w[0]) + "</b><span>" + esc(w[1]) + "</span></li>").join("") + "</ul>";
+    if (c.vids && c.vids.length)
+      h += "<p class='eyebrow'>Watch someone do it</p><ul class='exvids'>"
+         + c.vids.map((v) => "<li><a href=\"" + esc(vidHref(v)) + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
+             + esc(v.t) + "</a></li>").join("") + "</ul>";
+    return h;
+  }
+
   function ensureEntry(date) {
-    if (!state.log[date]) state.log[date] = { type: planFor(date), sets: {}, checks: [], note: "", manual: false, u: 0 };
+    if (!state.log[date]) state.log[date] = { type: planFor(date), sets: {}, checks: {}, note: "", manual: false, u: 0 };
     const e = state.log[date];
     e.u = Date.now();
     return e;
@@ -698,14 +958,23 @@
     });
     document.querySelectorAll("#workout [data-lvl]").forEach((sel) => {
       sel.addEventListener("change", () => {
-        state.levels[sel.dataset.lvl] = +sel.value;
+        state.levels[sel.dataset.lvl] = sel.value;
         touchProfile(); save(); renderToday(); renderProgram();
+      });
+    });
+    document.querySelectorAll("#workout [data-exp]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const panel = $("det-" + btn.dataset.exp);
+        const open = panel.hidden;
+        panel.hidden = !open;
+        btn.setAttribute("aria-expanded", String(open));
+        btn.textContent = open ? "Hide" : "Details";
       });
     });
     document.querySelectorAll("#workout [data-chk]").forEach((cb) => {
       cb.addEventListener("change", () => {
         const e = ensureEntry(cursor);
-        e.checks[+cb.dataset.chk] = cb.checked;
+        e.checks[cb.dataset.chk] = cb.checked;
         save(); renderBand();
       });
     });
@@ -795,14 +1064,17 @@
 
     $("ladders").innerHTML = Object.keys(MOVES).map((m) => {
       const M = MOVES[m];
+      const here = rung(m).id, list = avail(m), hidden = lockedCount(m);
       return "<div class='ladder'><h3>" + esc(M.label) + " <span class='eyebrow' style='font-weight:400'>· " +
         (M.unit === "sec" ? "held for seconds" : "counted in reps") + "</span></h3><div class='rungs'>" +
-        M.ladder.map((x, i) =>
-          "<details class='rung" + (i === state.levels[m] ? " cur" : "") + "'>" +
+        list.map((x, i) =>
+          "<details class='rung" + (x.id === here ? " cur" : "") + "'>" +
             "<summary><span class='n'>" + (i + 1) + "</span>" +
               "<span class='rname'>" + esc(x.name) + "</span>" +
-              (i === state.levels[m] ? "<span class='here'>You are here</span>" : "") +
-            "</summary><div class='exdet-body'>" + detailBody(m, i) + "</div></details>").join("") +
+              (x.id === here ? "<span class='here'>You are here</span>" : "") +
+            "</summary><div class='exdet-body'>" + detailBody(m, x.id) + "</div></details>").join("") +
+        (hidden ? "<p class='lockednote'>" + hidden + (hidden === 1 ? " rung is" : " rungs are") +
+                  " hidden because they need kit you have switched off.</p>" : "") +
         "</div></div>";
     }).join("");
 
@@ -810,6 +1082,20 @@
       "<li><span class='idx'>" + pad(i + 1) + "</span><div><a class='t' href='" + esc(v.url) +
       "' target='_blank' rel='noopener noreferrer'>" + esc(v.t) + "</a>" +
       "<p class='meta'>" + esc(v.meta) + "</p><p class='why'>" + esc(v.why) + "</p></div></li>").join("");
+
+    $("gearList").innerHTML = GEAR.map((g) =>
+      '<div class="check"><input type="checkbox" id="gear-' + g.id + '" data-gear="' + g.id + '"' +
+        ' aria-labelledby="geart-' + g.id + '"' + (state.gear[g.id] ? " checked" : "") + ">" +
+      '<div class="check-main"><div class="check-head"><div class="check-text">' +
+        '<span class="t" id="geart-' + g.id + '">' + esc(g.label) + "</span>" +
+        '<span class="d">' + esc(g.note) + "</span></div></div></div></div>").join("");
+    document.querySelectorAll("#gearList [data-gear]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        state.gear[cb.dataset.gear] = cb.checked;
+        touchProfile(); save();
+        renderBand(); renderToday(); renderProgram();
+      });
+    });
 
     $("startDate").value = state.start;
   }
@@ -842,8 +1128,9 @@
 
   $("saveBtn").addEventListener("click", () => {
     const e = ensureEntry(cursor), plan = planFor(cursor);
-    if (SESSIONS[plan].checks && !e.checks.some(Boolean)) {
-      SESSIONS[plan].checks.forEach((_, i) => { e.checks[i] = true; });
+    if (SESSIONS[plan].checks) {
+      const vis = visibleChecks(SESSIONS[plan]);
+      if (!vis.some((c) => e.checks[c.id])) vis.forEach((c) => { e.checks[c.id] = true; });
     }
     e.manual = true;
     save(); renderToday(); renderBand();
@@ -1011,7 +1298,7 @@
     function weight(e) {
       let n = e.manual ? 1 : 0;
       if (e.sets) for (const m in e.sets) n += e.sets[m].filter((v) => v > 0).length;
-      if (e.checks) n += e.checks.filter(Boolean).length;
+      if (e.checks) n += Object.keys(e.checks).filter((k) => e.checks[k]).length;
       if (e.note) n += 1;
       return n;
     }
@@ -1164,6 +1451,7 @@
   })();
 
   /* ---------- go ---------------------------------------------------- */
+  save();                // persist any format migration load() just applied
   sync.adopt();          // fold in whatever the last publish carried
   applyTheme();
   renderBand();

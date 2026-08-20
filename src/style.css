@@ -109,6 +109,14 @@ button{font:inherit;color:inherit;cursor:pointer}
   text-transform:uppercase;color:var(--ink-2);border-radius:0;
 }
 .iconbtn:hover{border-color:var(--ink);color:var(--ink)}
+.iconbtn.due{border-color:var(--mark);color:var(--mark-text);background:var(--mark-soft)}
+.iconbtn:disabled{opacity:.5;cursor:progress}
+.syncstate{
+  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+.syncstate[data-tone="due"]{color:var(--mark-text)}
+.syncstate[data-tone="bad"]{color:var(--danger)}
 
 /* ---- streak band ----------------------------------------------------- */
 .band{

@@ -157,11 +157,14 @@
         if (s && s.log) {
           s.levels = Object.assign({}, DEFAULT_LEVELS, s.levels || {});
           s.theme = s.theme || "auto";
+          s.pu = s.pu || 0;
+          s.syncedAt = s.syncedAt || 0;
           return s;
         }
       } catch (e) { /* corrupt — fall through to a fresh state */ }
     }
-    return { v: 1, start: ymd(new Date()), levels: Object.assign({}, DEFAULT_LEVELS), log: {}, theme: "auto" };
+    return { v: 1, start: ymd(new Date()), levels: Object.assign({}, DEFAULT_LEVELS), log: {},
+             theme: "auto", u: 0, pu: 0, syncedAt: 0 };
   }
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(state)); }
@@ -351,10 +354,14 @@
       '<span class="d">' + esc(c[1]) + "</span></label></div>").join("");
   }
 
+  // Every write stamps the day so two devices can be merged by recency.
   function ensureEntry(date) {
-    if (!state.log[date]) state.log[date] = { type: planFor(date), sets: {}, checks: [], note: "", manual: false };
-    return state.log[date];
+    if (!state.log[date]) state.log[date] = { type: planFor(date), sets: {}, checks: [], note: "", manual: false, u: 0 };
+    const e = state.log[date];
+    e.u = Date.now();
+    return e;
   }
+  function touchProfile() { state.pu = Date.now(); }
 
   function wireToday() {
     document.querySelectorAll("#workout .setin").forEach((inp) => {
@@ -364,13 +371,13 @@
         const v = parseInt(inp.value, 10);
         e.sets[m][i] = isNaN(v) || v < 0 ? 0 : Math.min(v, 999);
         inp.classList.toggle("filled", e.sets[m][i] > 0);
-        save(); renderBand();
+        save(); renderBand(); sync.refresh();
       });
     });
     document.querySelectorAll("#workout [data-lvl]").forEach((sel) => {
       sel.addEventListener("change", () => {
         state.levels[sel.dataset.lvl] = +sel.value;
-        save(); renderToday(); renderProgram();
+        touchProfile(); save(); renderToday(); renderProgram();
       });
     });
     document.querySelectorAll("#workout [data-chk]").forEach((cb) => {
@@ -527,14 +534,14 @@
 
   $("themeBtn").addEventListener("click", () => {
     state.theme = state.theme === "auto" ? "light" : state.theme === "light" ? "dark" : "auto";
-    applyTheme(); save();
+    applyTheme(); touchProfile(); save();
     flash("savedMsg", "Theme: " + state.theme);
   });
 
   $("startDate").addEventListener("change", (ev) => {
     if (!ev.target.value) return;
     state.start = ev.target.value;
-    save(); renderBand(); renderToday();
+    touchProfile(); save(); renderBand(); renderToday();
     flash("dataMsg", "Program start moved to " + prettyShort(state.start) + ".");
   });
 
@@ -627,9 +634,213 @@
     flash("dataMsg", "Log erased.");
   });
 
+
+  /* ================================================================
+     Cross-device sync, artifact edition.
+
+     This page is a classic artifact, so the only write verb is
+     artifact.publish(html) — a whole-page replacement that every open
+     view then reloads to. Two consequences shape everything below:
+
+       1. Publishing reloads this view, so it cannot run on a keystroke.
+          localStorage stays the working store; Sync is a deliberate act.
+       2. To republish itself the page needs its own source. Serializing
+          the live DOM is not allowed (it carries injected runtime
+          scripts), so the page ships a pristine copy of its source,
+          base64 in #ztb-tpl, with slots for that copy and for the log.
+          Re-inserting the same copy makes the output a fixed point.
+
+     Outside the artifact viewer none of this exists: claude.use returns
+     null, the control stays hidden, and the app behaves exactly as the
+     standalone file does.
+     ================================================================ */
+
+  const sync = (function () {
+    let nsPromise = null;
+    let readOnly = false;
+    let busy = false;
+
+    function capability() {
+      if (!nsPromise) {
+        nsPromise = (window.claude && typeof window.claude.use === "function")
+          ? Promise.resolve(window.claude.use("artifact")).catch(() => null)
+          : Promise.resolve(null);
+      }
+      return nsPromise;
+    }
+
+    // The log baked into this version of the page by the last publish.
+    function published() {
+      const el = document.getElementById("ztb-state");
+      if (!el) return null;
+      try {
+        const o = JSON.parse(el.textContent || "null");
+        return o && o.log ? o : null;
+      } catch (err) { return null; }
+    }
+
+    // How much real work a day holds — the tie-breaker when two devices
+    // stamp the same day at the same millisecond. Never drops the fuller one.
+    function weight(e) {
+      let n = e.manual ? 1 : 0;
+      if (e.sets) for (const m in e.sets) n += e.sets[m].filter((v) => v > 0).length;
+      if (e.checks) n += e.checks.filter(Boolean).length;
+      if (e.note) n += 1;
+      return n;
+    }
+
+    function mergeLogs(mine, theirs) {
+      const out = {};
+      const keys = Object.keys(mine).concat(Object.keys(theirs));
+      for (const k of keys) {
+        if (out[k]) continue;
+        const a = mine[k], b = theirs[k];
+        if (!a) { out[k] = b; continue; }
+        if (!b) { out[k] = a; continue; }
+        const ua = a.u || 0, ub = b.u || 0;
+        out[k] = ua === ub ? (weight(a) >= weight(b) ? a : b) : (ua > ub ? a : b);
+      }
+      return out;
+    }
+
+    // Fold the published version into what this device holds. Runs once at
+    // load, before anything renders.
+    function adopt() {
+      const remote = published();
+      if (!remote) return;
+      state.log = mergeLogs(state.log, remote.log || {});
+      if ((remote.pu || 0) > (state.pu || 0)) {
+        state.start = remote.start || state.start;
+        state.levels = Object.assign({}, DEFAULT_LEVELS, remote.levels || {});
+        state.pu = remote.pu;
+      }
+      state.syncedAt = Math.max(state.syncedAt || 0, remote.syncedAt || 0);
+      save();
+    }
+
+    function pending() {
+      const since = state.syncedAt || 0;
+      return Object.keys(state.log).filter((k) => (state.log[k].u || 0) > since).length;
+    }
+
+    function page(snapshot) {
+      const el = document.getElementById("ztb-tpl");
+      if (!el) return null;
+      const b64 = el.textContent.trim();
+      const tpl = new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
+      // Function replacements: the log may contain $& and friends.
+      const tplTag = '<script type="text/plain" id="ztb-tpl">' + b64 + "<\/script>";
+      const stateTag = '<script type="application/json" id="ztb-state">'
+        + JSON.stringify(snapshot).replace(/</g, "\\u003c") + "<\/script>";
+      // Assembled, never written literally: this source is itself embedded
+      // in the page, so a literal marker here would be a second slot.
+      const slot = (n) => "<!--ZTB-" + n + "-->";
+      return tpl.replace(slot("TPL"), () => tplTag)
+                .replace(slot("STATE"), () => stateTag);
+    }
+
+    function show(text, tone) {
+      const el = $("syncState");
+      el.textContent = text;
+      if (tone) el.dataset.tone = tone; else delete el.dataset.tone;
+      el.hidden = false;
+    }
+
+    function ago(t) {
+      if (!t) return "never";
+      const m = Math.floor((Date.now() - t) / 60000);
+      if (m < 1) return "just now";
+      if (m < 60) return m + "m ago";
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + "h ago";
+      return Math.floor(h / 24) + "d ago";
+    }
+
+    function refresh() {
+      if (readOnly || busy) return;
+      const n = pending();
+      const btn = $("syncBtn");
+      btn.disabled = false;
+      btn.classList.toggle("due", n > 0);
+      btn.textContent = n > 0 ? "Sync " + n : "Sync";
+      show(n > 0 ? n + (n === 1 ? " day unsaved" : " days unsaved") : "Saved " + ago(state.syncedAt),
+           n > 0 ? "due" : null);
+    }
+
+    function stop(text) {
+      readOnly = true;
+      $("syncBtn").hidden = true;
+      show(text, "bad");
+    }
+
+    async function push() {
+      if (busy || readOnly) return;
+      const ns = await capability();
+      if (!ns) return;
+      busy = true;
+      $("syncBtn").disabled = true;
+      show("Saving…");
+
+      const snapshot = JSON.parse(JSON.stringify(state));
+      snapshot.syncedAt = Date.now();
+      const html = page(snapshot);
+      if (!html) { busy = false; stop("Sync unavailable"); return; }
+
+      try {
+        // On success the shell reloads this view to the new version, so
+        // nothing after this line is guaranteed to run.
+        await ns.publish(html);
+        state.syncedAt = snapshot.syncedAt;
+        save();
+        busy = false;
+        refresh();
+      } catch (err) {
+        busy = false;
+        const code = (err && err.code) || "upstream_error";
+        if (code === "conflict") {
+          // Routine: another view won. The shell is already reloading us
+          // to that version, and adopt() will merge this device's days in.
+          show("Another device saved first — reloading", "due");
+          return;
+        }
+        if (code === "not_writer" || code === "not_granted" || code === "not_declared"
+            || code === "capability_disabled" || code === "capability_removed") {
+          stop("View only");
+          return;
+        }
+        if (code === "rate_limited") { show("Saving too often — wait a minute", "bad"); }
+        else if (code === "too_large") { show("Log too large to save", "bad"); }
+        else { show("Could not save — your log is safe on this device", "bad"); }
+        setTimeout(refresh, 6000);
+      }
+    }
+
+    async function start() {
+      const ns = await capability();
+      if (!ns) return;                       // standalone file: stay hidden
+      // The page ships copy written for the offline edition; inside the
+      // artifact viewer that copy would be a lie, so correct it.
+      $("subline").textContent =
+        "Show up, log the set, move the number. Tap Sync to carry it to your other devices.";
+      $("dataLede").textContent =
+        "This device keeps the working copy, so logging a set never waits on a network. "
+        + "Tapping Sync saves your log into this page itself, which is what lets another "
+        + "device pick it up — so your training history is stored with the artifact, not "
+        + "only in this browser. Export a backup anyway before clearing site data.";
+      $("syncBtn").hidden = false;
+      $("syncBtn").addEventListener("click", push);
+      refresh();
+      setInterval(refresh, 60000);
+    }
+
+    return { adopt: adopt, start: start, refresh: refresh };
+  })();
+
   /* ---------- go ---------------------------------------------------- */
+  sync.adopt();          // fold in whatever the last publish carried
   applyTheme();
   renderBand();
   renderToday();
   renderProgram();
+  sync.start();
 })();

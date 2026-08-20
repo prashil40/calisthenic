@@ -4,9 +4,11 @@
     <div>
       <p class="eyebrow" style="margin:0 0 4px">Bodyweight training log &middot; 12-week beginner ladder</p>
       <h1>Zero to Bar</h1>
-      <p class="sub">Show up, log the set, move the number. Everything stays on this device.</p>
+      <p class="sub" id="subline">Show up, log the set, move the number. Everything stays on this device.</p>
     </div>
     <div class="mast-right">
+      <span class="syncstate" id="syncState" hidden></span>
+      <button class="iconbtn" id="syncBtn" type="button" hidden>Sync</button>
       <button class="iconbtn" id="themeBtn" type="button">Theme</button>
     </div>
   </header>
@@ -129,7 +131,7 @@
     <div class="card">
       <header><h2>Your data</h2><span class="eyebrow">Stored in this browser only</span></header>
       <div class="body">
-        <p class="lede">Nothing leaves your device — there is no account and no server. That also means clearing site data wipes your log, so export a backup now and then, and import it if you move to a new phone or browser.</p>
+        <p class="lede" id="dataLede">Nothing leaves your device — there is no account and no server. That also means clearing site data wipes your log, so export a backup now and then, and import it if you move to a new phone or browser.</p>
         <div class="actions" style="border-top:0;padding-top:4px;margin-top:14px">
           <button class="btn ghost" type="button" id="exportBtn">Export backup</button>
           <button class="btn ghost" type="button" id="importBtn">Import backup</button>

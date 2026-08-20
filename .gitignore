@@ -1,0 +1,3 @@
+# Build output. dist/artifact-body.html gets your live training log merged
+# into its state block at publish time, so it is not source.
+dist/

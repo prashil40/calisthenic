@@ -452,6 +452,8 @@
   };
   function guide(move, id) { return (GUIDE[move] || {})[id] || null; }
 
+  /* @@DEMOS@@ */
+
 
   /* ---------- sessions ---------------------------------------------
      Recovery-day items carry the same shape of detail as an exercise,
@@ -894,8 +896,12 @@
   function detailPanel(move, id) {
     const body = detailBody(move, id);
     if (!body) return "";
-    return "<details class='exdet'><summary>How to do it</summary>"
-      + "<div class='exdet-body'>" + body + "</div></details>";
+    const d = demoFor(move, id);
+    return "<div class='exfoot'>"
+      + "<details class='exdet'><summary>How to do it</summary>"
+      + "<div class='exdet-body'>" + body + "</div></details>"
+      + (d ? "<button type='button' class='motionbtn' data-demo='" + move + ":" + id + "'>Motion</button>" : "")
+      + "</div>";
   }
 
   // The text is deliberately NOT a <label>: wrapping the row in one made
@@ -962,6 +968,7 @@
         touchProfile(); save(); renderToday(); renderProgram();
       });
     });
+    wireMotion($("workout"));
     document.querySelectorAll("#workout [data-exp]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const panel = $("det-" + btn.dataset.exp);
@@ -1072,7 +1079,10 @@
             "<summary><span class='n'>" + (i + 1) + "</span>" +
               "<span class='rname'>" + esc(x.name) + "</span>" +
               (x.id === here ? "<span class='here'>You are here</span>" : "") +
-            "</summary><div class='exdet-body'>" + detailBody(m, x.id) + "</div></details>").join("") +
+            "</summary><div class='exdet-body'>" + detailBody(m, x.id) +
+              (demoFor(m, x.id) ? "<div class='exfoot'><button type='button' class='motionbtn' data-demo='" +
+                 m + ":" + x.id + "'>Motion</button></div>" : "") +
+            "</div></details>").join("") +
         (hidden ? "<p class='lockednote'>" + hidden + (hidden === 1 ? " rung is" : " rungs are") +
                   " hidden because they need kit you have switched off.</p>" : "") +
         "</div></div>";
@@ -1083,6 +1093,7 @@
       "' target='_blank' rel='noopener noreferrer'>" + esc(v.t) + "</a>" +
       "<p class='meta'>" + esc(v.meta) + "</p><p class='why'>" + esc(v.why) + "</p></div></li>").join("");
 
+    wireMotion($("ladders"));
     $("gearList").innerHTML = GEAR.map((g) =>
       '<div class="check"><input type="checkbox" id="gear-' + g.id + '" data-gear="' + g.id + '"' +
         ' aria-labelledby="geart-' + g.id + '"' + (state.gear[g.id] ? " checked" : "") + ">" +
@@ -1098,6 +1109,83 @@
     });
 
     $("startDate").value = state.start;
+  }
+
+  /* ---------- motion modal ------------------------------------------ */
+  const motion = (function () {
+    let demo = null, raf = 0, playing = true, phase = 0, last = 0, opener = null;
+
+    // Playback runs a full out-and-back cycle, but the slider is labelled
+    // by POSITION IN THE REP, so dragging right always goes toward the end.
+    const posOf = (ph) => 0.5 - Math.cos(ph * Math.PI * 2) / 2;
+    const phaseOf = (t) => Math.acos(1 - 2 * Math.min(Math.max(t, 0), 1)) / (Math.PI * 2);
+
+    function paint() {
+      const t = posOf(phase);
+      $("demoStage").innerHTML = demoSVG(demo, t);
+      $("demoScrub").value = String(Math.round(t * 1000));
+      $("demoPhase").textContent = demo.hold ? "Hold"
+        : t <= 0.04 ? "Start" : t >= 0.96 ? "End" : "Mid-rep";
+    }
+    function tick(now) {
+      if (!playing) return;
+      const dt = last ? (now - last) / 1000 : 0;
+      last = now;
+      phase = (phase + dt / (demo.hold ? 6 : 2.6)) % 1;
+      paint();
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() { cancelAnimationFrame(raf); raf = 0; last = 0; }
+
+    function open(key, opts) {
+      demo = DEMOS[DEMO_FOR[key]];
+      if (!demo) return;
+      opener = opts && opts.from;
+      const name = (opts && opts.name) || demo.t;
+      $("demoKicker").textContent = "How the rep moves";
+      $("demoTitle").textContent = name;
+      $("demoNote").textContent = demo.reps
+        + (name.toLowerCase() === demo.t.toLowerCase() ? ""
+           : " · Drawn as the " + demo.t.toLowerCase() + " it belongs to; your rung changes the angle, not the path.");
+      phase = 0; playing = true; $("demoPlay").textContent = "Pause";
+      $("demoModal").hidden = false;
+      document.body.style.overflow = "hidden";
+      paint();
+      stop(); raf = requestAnimationFrame(tick);
+      $("demoClose").focus();
+    }
+    function close() {
+      stop(); $("demoModal").hidden = true; document.body.style.overflow = "";
+      if (opener && document.contains(opener)) opener.focus();
+      opener = null;
+    }
+
+    $("demoClose").addEventListener("click", close);
+    $("demoModal").addEventListener("click", (ev) => { if (ev.target === $("demoModal")) close(); });
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && !$("demoModal").hidden) close();
+    });
+    $("demoPlay").addEventListener("click", () => {
+      playing = !playing;
+      $("demoPlay").textContent = playing ? "Pause" : "Play";
+      if (playing) { last = 0; raf = requestAnimationFrame(tick); } else stop();
+    });
+    $("demoScrub").addEventListener("input", () => {
+      playing = false; stop(); $("demoPlay").textContent = "Play";
+      phase = phaseOf(+$("demoScrub").value / 1000);
+      paint();
+    });
+    return { open: open, close: close };
+  })();
+
+  function wireMotion(root) {
+    root.querySelectorAll("[data-demo]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.demo, m = key.split(":")[0], id = key.split(":")[1];
+        const r = MOVES[m].ladder.find((x) => x.id === id);
+        motion.open(key, { name: r ? r.name : "", from: btn });
+      });
+    });
   }
 
   /* ---------- tabs -------------------------------------------------- */
@@ -1192,9 +1280,10 @@
   /* ---------- text backup: the route that works everywhere ---------- */
   function restore(obj) {
     if (!obj || typeof obj !== "object" || !obj.log) throw new Error("shape");
-    state = { v: 1, start: obj.start || ymd(new Date()),
-              levels: Object.assign({}, DEFAULT_LEVELS, obj.levels || {}),
-              log: obj.log, theme: obj.theme || "auto" };
+    state = migrate({ v: 1, start: obj.start || ymd(new Date()),
+                      levels: obj.levels, gear: obj.gear, log: obj.log,
+                      theme: obj.theme || "auto",
+                      pu: obj.pu || 0, syncedAt: obj.syncedAt || 0 });
     save(); applyTheme(); renderBand(); renderToday(); renderProgram();
     return Object.keys(state.log).length;
   }
@@ -1243,7 +1332,8 @@
 
   $("resetBtn").addEventListener("click", () => {
     if (!confirm("Erase every logged day and start over? Export a backup first if you want to keep it.")) return;
-    state = { v: 1, start: ymd(new Date()), levels: Object.assign({}, DEFAULT_LEVELS), log: {}, theme: state.theme };
+    state = migrate({ v: 1, start: ymd(new Date()), levels: null, gear: state.gear,
+                      log: {}, theme: state.theme, pu: Date.now(), syncedAt: 0 });
     save(); renderBand(); renderToday(); renderProgram();
     flash("dataMsg", "Log erased.");
   });
@@ -1322,11 +1412,13 @@
     function adopt() {
       const remote = published();
       if (!remote) return;
-      state.log = mergeLogs(state.log, remote.log || {});
-      if ((remote.pu || 0) > (state.pu || 0)) {
-        state.start = remote.start || state.start;
-        state.levels = Object.assign({}, DEFAULT_LEVELS, remote.levels || {});
-        state.pu = remote.pu;
+      const theirs = migrate(JSON.parse(JSON.stringify(remote)));
+      state.log = mergeLogs(state.log, theirs.log || {});
+      if ((theirs.pu || 0) > (state.pu || 0)) {
+        state.start = theirs.start || state.start;
+        state.levels = theirs.levels;
+        state.gear = theirs.gear;
+        state.pu = theirs.pu;
       }
       state.syncedAt = Math.max(state.syncedAt || 0, remote.syncedAt || 0);
       save();

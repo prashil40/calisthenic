@@ -385,3 +385,56 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
   .lvl{margin-left:0;width:100%}
   .stat .v{font-size:32px}
 }
+
+/* ---- motion demo ------------------------------------------------------ */
+.exfoot{display:flex;align-items:flex-end;gap:12px;justify-content:space-between}
+.exfoot .exdet{flex:1;min-width:0}
+.motionbtn{
+  flex:none;margin-top:9px;background:var(--surface);border:1px solid var(--line-strong);
+  padding:6px 12px;border-radius:0;
+  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-2);
+}
+.motionbtn::before{content:"\25B6";margin-right:7px;font-size:8px;color:var(--mark-text)}
+.motionbtn:hover{border-color:var(--ink);color:var(--ink)}
+.rung .exfoot{padding:0 0 4px}
+
+.modal{
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(16,18,16,.55);
+}
+.modal[hidden]{display:none}
+.modal-card{
+  background:var(--surface);border:1px solid var(--line-strong);box-shadow:var(--shadow);
+  width:100%;max-width:520px;max-height:100%;overflow-y:auto;
+}
+.modal-card > header{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface-2);
+}
+.modal-card > header h2{font-size:21px;margin-top:2px}
+.demo-stage{padding:8px 18px 0}
+.demo-svg{display:block;width:100%;height:auto;max-height:46vh}
+.d-ground{stroke:var(--line-strong);stroke-width:1.5}
+.d-prop{fill:var(--surface-3);stroke:var(--line-strong);stroke-width:1.2}
+.d-bar{stroke:var(--line-strong);stroke-width:1.5}
+.d-barc{fill:var(--mark);stroke:none}
+.d-limb{stroke:var(--ink);stroke-width:4.5;stroke-linecap:round}
+.d-head{fill:var(--mark);stroke:var(--ink);stroke-width:1.5}
+.demo-ctl{display:flex;align-items:center;gap:12px;padding:6px 18px 0}
+.demo-ctl input[type="range"]{flex:1;accent-color:var(--mark);min-width:0}
+.demo-ctl .eyebrow{min-width:42px;text-align:right}
+.demo-note{
+  margin:12px 18px 0;padding-left:12px;border-left:2px solid var(--mark);
+  font-size:13.5px;color:var(--ink-2);
+}
+.demo-fine{
+  margin:12px 0 0;padding:12px 18px 16px;border-top:1px solid var(--line);
+  font-size:12px;color:var(--ink-3);
+}
+@media (max-width:600px){
+  .exfoot{flex-direction:column;align-items:stretch;gap:0}
+  .motionbtn{margin-top:12px;width:100%;padding:10px 12px}
+  .modal{padding:0;align-items:flex-end}
+  .modal-card{max-width:none;max-height:92vh}
+}

@@ -39,6 +39,18 @@ to five variations. When you clear the top of the rep range on every set for
 two sessions running, the app flags *Ready to level up*; step up a rung and
 let the reps drop again. Rep targets themselves rise every second week.
 
+## Exercise detail
+
+Every rung of every ladder — 31 variations — expands to show setup and
+execution steps, the specific ways beginners break that rep with the fix for
+each, and links to video tutorials. Open it from *How to do it* under any
+exercise in Today, or from the ladders in *Program*.
+
+Video links are a mix of direct links and tuned YouTube searches. A search
+link is used wherever a specific tutorial could not be confirmed, because a
+search URL is always valid while a guessed video id is not. They are a
+starting point to curate, not a vetted list.
+
 ## What it tracks
 
 - **Streak** — consecutive days with anything logged, rest days included,

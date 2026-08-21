@@ -8,7 +8,7 @@ src = root / "src"
 body = (
     "<style>\n" + (src / "style.css").read_text() + "\n</style>\n\n"
     + (src / "markup.html").read_text()
-    + "\n<script>\n" + (src / "app.js").read_text().replace("  /* @@DEMOS@@ */", (src / "demo.js").read_text()) + "\n</script>\n"
+    + "\n<script>\n" + (src / "app.js").read_text().replace("  /* @@CONFIG@@ */", (src / "config.js").read_text()).replace("  /* @@DEMOS@@ */", (src / "demo.js").read_text()) + "\n</script>\n"
 )
 
 page = """<!doctype html>

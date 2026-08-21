@@ -38,7 +38,7 @@ BODY = """<!--ZTB-TPL-->
 </script>
 """ % ((src / "style.css").read_text(),
        (src / "markup.html").read_text(),
-       (src / "app.js").read_text().replace("  /* @@DEMOS@@ */", (src / "demo.js").read_text()))
+       (src / "app.js").read_text().replace("  /* @@CONFIG@@ */", (src / "config.js").read_text()).replace("  /* @@DEMOS@@ */", (src / "demo.js").read_text()))
 
 # The document the page republishes as. Its slots stay unfilled — they are
 # what generation N+1 fills in.

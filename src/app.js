@@ -494,6 +494,8 @@
   };
   function guide(move, id) { return (GUIDE[move] || {})[id] || null; }
 
+  /* @@CONFIG@@ */
+
   /* @@DEMOS@@ */
 
 

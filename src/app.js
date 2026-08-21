@@ -936,14 +936,20 @@
       + "</ul>";
   }
 
+  function motionBtn(demoName, label) {
+    if (!demoName || !DEMOS[demoName]) return "";
+    return "<button type='button' class='motionbtn' data-demo='" + esc(demoName) +
+           "' data-label='" + esc(label || "") + "'>Motion</button>";
+  }
+
   function detailPanel(move, id) {
     const body = detailBody(move, id);
     if (!body) return "";
-    const d = demoFor(move, id);
+    const r = MOVES[move].ladder.find((x) => x.id === id);
     return "<div class='exfoot'>"
       + "<details class='exdet'><summary>How to do it</summary>"
       + "<div class='exdet-body'>" + body + "</div></details>"
-      + (d ? "<button type='button' class='motionbtn' data-demo='" + move + ":" + id + "'>Motion</button>" : "")
+      + motionBtn(demoNameFor(move, id), r ? r.name : "")
       + "</div>";
   }
 
@@ -983,6 +989,8 @@
       h += "<p class='eyebrow'>Watch someone do it</p><ul class='exvids'>"
          + c.vids.map((v) => "<li><a href=\"" + esc(vidHref(v)) + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
              + esc(v.t) + "</a></li>").join("") + "</ul>";
+    const dm = motionBtn(RECOVERY_DEMO[c.id], c.t);
+    if (dm) h += "<div class='exfoot'>" + dm + "</div>";
     return h;
   }
 
@@ -1123,8 +1131,7 @@
               "<span class='rname'>" + esc(x.name) + "</span>" +
               (x.id === here ? "<span class='here'>You are here</span>" : "") +
             "</summary><div class='exdet-body'>" + detailBody(m, x.id) +
-              (demoFor(m, x.id) ? "<div class='exfoot'><button type='button' class='motionbtn' data-demo='" +
-                 m + ":" + x.id + "'>Motion</button></div>" : "") +
+              (demoNameFor(m, x.id) ? "<div class='exfoot'>" + motionBtn(demoNameFor(m, x.id), x.name) + "</div>" : "") +
             "</div></details>").join("") +
         (hidden ? "<p class='lockednote'>" + hidden + (hidden === 1 ? " rung is" : " rungs are") +
                   " hidden because they need kit you have switched off.</p>" : "") +
@@ -1168,7 +1175,7 @@
       $("demoStage").innerHTML = demoSVG(demo, t);
       $("demoScrub").value = String(Math.round(t * 1000));
       $("demoPhase").textContent = demo.hold ? "Hold"
-        : t <= 0.04 ? "Start" : t >= 0.96 ? "End" : "Mid-rep";
+        : t <= 0.04 ? "Start" : t >= 0.96 ? "End" : "Mid";
     }
     function tick(now) {
       if (!playing) return;
@@ -1180,8 +1187,8 @@
     }
     function stop() { cancelAnimationFrame(raf); raf = 0; last = 0; }
 
-    function open(key, opts) {
-      demo = DEMOS[DEMO_FOR[key]];
+    function open(demoName, opts) {
+      demo = DEMOS[demoName];
       if (!demo) return;
       opener = opts && opts.from;
       const name = (opts && opts.name) || demo.t;
@@ -1223,11 +1230,8 @@
 
   function wireMotion(root) {
     root.querySelectorAll("[data-demo]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const key = btn.dataset.demo, m = key.split(":")[0], id = key.split(":")[1];
-        const r = MOVES[m].ladder.find((x) => x.id === id);
-        motion.open(key, { name: r ? r.name : "", from: btn });
-      });
+      btn.addEventListener("click", () =>
+        motion.open(btn.dataset.demo, { name: btn.dataset.label, from: btn }));
     });
   }
 

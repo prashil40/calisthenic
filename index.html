@@ -556,7 +556,7 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
     <div class="card">
       <header><h2>Your kit</h2><span class="eyebrow">Everything else needs a floor and a doorway</span></header>
       <div class="body">
-        <p class="lede">The whole program runs on a floor, a doorway, a sturdy table and two chairs. Switch a piece of kit on and the rungs that need it appear in the ladders; leave it off and they stay hidden, so nothing in your program is something you cannot actually do.</p>
+        <p class="lede">The program assumes only a floor, a doorway and two chairs — a door is the anchor for every pulling rung, so you are never stuck without one. Switch a piece of kit on and the rungs that need it appear in the ladders; leave it off and they stay hidden, so nothing in your program is something you cannot actually do.</p>
         <div id="gearList" style="margin-top:16px"></div>
       </div>
     </div>
@@ -671,10 +671,14 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
       label: "Pull", unit: "reps",
       ladder: [
         { id: "door",    name: "Doorframe row",       cue: "Hold a doorframe, feet close, lean back and pull your chest to your hands." },
-        { id: "table",   name: "Table row",           cue: "Under a sturdy table, heels on the floor, chest to the edge. Squeeze the shoulder blades." },
-        { id: "tablehi", name: "Table row, feet up",  cue: "Same row with your heels on a chair, so your body is level and the pull is much harder." },
+        { id: "band",    name: "Band row",            cue: "Band anchored at chest height in a closed door. Step back until it is taut and row the handles to your ribs.", needs: "band" },
+        { id: "towel",   name: "Towel door row",      cue: "Towel over the top of a latched door. Grip both ends, lean back, row your chest to your hands." },
+        { id: "table",   name: "Table row",           cue: "Under a sturdy table, heels on the floor, chest to the edge. Squeeze the shoulder blades.", needs: "table" },
+        { id: "towelhi", name: "Towel row, feet forward", cue: "Same towel row with the feet walked well forward, so the body is closer to horizontal." },
+        { id: "bandpull", name: "Band lat pulldown",  cue: "Band anchored at the top of the door. Kneel back and pull the handles down to your chest.", needs: "band" },
+        { id: "tablehi", name: "Table row, feet up",  cue: "Same row with your heels on a chair, so your body is level and the pull is much harder.", needs: "table" },
         { id: "inv",     name: "Inverted row",        cue: "Bar at hip height, body horizontal, heels on the floor. Chest touches the bar.", needs: "bar" },
-        { id: "onearm",  name: "One-arm table row",   cue: "One hand on the table edge, other arm across your chest. Pull your chest up on one side.", },
+        { id: "onearm",  name: "One-arm doorway row", cue: "Hold a doorframe with one hand, lean back, and pull your chest up on that side." },
         { id: "neg",     name: "Negative pull-up",    cue: "Jump to the top, chin over the bar, then lower for a full five-second count.", needs: "bar" },
         { id: "pullup",  name: "Pull-up",             cue: "Dead hang to chin over the bar. Shoulders down and back before you pull.", needs: "bar" }
       ]
@@ -739,7 +743,9 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
      that need it.                                                     */
   const GEAR = [
     { id: "bar",     label: "Pull-up bar",   note: "A doorway bar, a park bar, or anything you can hang from." },
-    { id: "dipbars", label: "Parallel bars", note: "A dip station or park parallettes. Two sturdy chairs cover most of this already." }
+    { id: "dipbars", label: "Parallel bars", note: "A dip station or park parallettes. Two sturdy chairs cover most of this already." },
+    { id: "table",   label: "A table you can hang your weight from", note: "It has to take your whole bodyweight pulling up on the edge. Glass, folding and flat-pack tables usually cannot — if in doubt, leave this off and row on a door instead." },
+    { id: "band",    label: "Resistance bands", note: "Handled bands with a door anchor. They add both a horizontal row and the vertical pull a bar would otherwise give you." }
   ];
 
   /* ---------- per-variation coaching detail --------------------------
@@ -812,6 +818,24 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
                 ["Hips bending back", "Stay in one line from heel to head, as if standing up at an angle."],
                 ["Shoulders creeping toward the ears", "Pull them down away from the ears before you pull your body in."]],
         vids: [{ t: "Search: doorway row beginner back exercise", q: "doorway row bodyweight back exercise beginner no equipment" }] },
+      band: { how: ["If your set has a door anchor — a strap with a ball or a knot on one end — feed it through at chest height and shut the door on it, so the stopper sits on the far side and cannot pull back through.",
+              "Set up on the side the door closes AGAINST, so pulling seats it into the frame. Give it a hard tug before you load it.",
+              "Take a handle in each hand and step back until the band is taut with your arms straight.",
+              "Row both handles to your lower ribs, elbows driving back, shoulder blades squeezing together. Return under control."],
+        watch: [["Pinching the bare band in the door instead of using an anchor", "A band trapped on a door edge abrades and tears, and it fails toward your face. Use the anchor, or use a towel and row your bodyweight instead."],
+                ["Letting the band snap you back", "Two to three seconds on the return. That half is most of the work."],
+                ["Trying to progress by adding reps forever", "With a band you progress by TENSION, not leverage: step further back, double the band, or move to a heavier one once you clear the top of the rep range."]],
+        vids: [{ t: "Search: resistance band row with door anchor", q: "resistance band row door anchor setup tutorial" },
+               { t: "Search: band row form", q: "resistance band row proper form back exercise" }] },
+      towel: { how: ["Throw a strong towel over the top of a door, then close and latch the door so it is pinched tight. Knot the ends together if it is long.",
+              "Set up on the side the door closes AGAINST, so pulling seats it into the frame instead of swinging it open. Give it a hard tug before you trust it.",
+              "Hold one end in each hand, feet either side of the door, and lean back with straight arms.",
+              "Pull your chest toward the door, elbows driving back, shoulder blades squeezing together. Walk the feet in to make it harder."],
+        watch: [["The door moving at all", "Stop. You are on the wrong side, or the latch is not holding. This is the one thing that can actually hurt you here."],
+                ["Pulling with the arms only", "Start each rep by squeezing the shoulder blades, then let the arms follow."],
+                ["Hips folding back", "Stay in one line from heel to head, as if standing up at an angle."]],
+        vids: [{ t: "Search: towel door row at home", q: "towel door row back exercise no equipment tutorial" },
+               { t: "Search: no-equipment back workout", q: "back workout no equipment no pull up bar at home" }] },
       table: { how: ["Lie under a sturdy table, chest below the edge, and grip it with both hands.",
               "Bend your knees, heels on the floor, and hold your body straight from knee to head.",
               "Pull your chest to the edge of the table, shoulder blades squeezing together.",
@@ -821,6 +845,24 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
                 ["Chest never reaching the edge", "Shorten the range by walking the feet in, rather than doing partial reps."]],
         vids: [{ t: "Inverted Rows — beginner to advanced progressions", url: "https://www.youtube.com/watch?v=Fl0UMfdEzsE" },
                { t: "Search: table row at home", q: "table row bodyweight back exercise at home beginner" }] },
+      towelhi: { how: ["Set the towel over a latched door as before, and test it hard.",
+              "Walk your feet toward the door until your body is at a shallow angle — the closer to horizontal, the harder.",
+              "Hold one line from heel to head and pull your chest to your hands.",
+              "Lower over two to three seconds. A broom handle laid across two sturdy chairs gives the same angle if you prefer to lie underneath."],
+        watch: [["Feet slipping out", "Train barefoot or in grippy shoes, and put a mat under your heels on smooth floors."],
+                ["Hips sagging toward the floor", "Squeeze the glutes. A level body is the whole reason this is harder than the last rung."],
+                ["Grip failing before your back does", "Wrap the towel once around each hand, or knot the ends into handles."]],
+        vids: [{ t: "Search: towel row feet forward", q: "towel door row feet forward horizontal bodyweight row" },
+               { t: "Search: inverted row with two chairs and a bar", q: "inverted row two chairs broomstick at home setup" }] },
+      bandpull: { how: ["Anchor the band at the TOP of a closed, latched door.",
+              "Kneel or sit far enough back that the band is taut with your arms straight overhead.",
+              "Pull the handles down and slightly apart toward your chest, driving the elbows down and squeezing the shoulder blades.",
+              "Return slowly all the way to straight arms. This is the vertical pull a pull-up trains, which is why it is worth the extra setup."],
+        watch: [["Leaning back so your bodyweight does the work", "Stay upright — the band should be doing the resisting, not your hips."],
+                ["Shoulders shrugging toward the ears", "Start each rep by pulling the shoulder blades down, then bend the arms."],
+                ["Wear where the band crosses the door edge", "Check it for nicks before every session and retire it at the first sign of fraying."]],
+        vids: [{ t: "Search: band lat pulldown at home", q: "resistance band lat pulldown door anchor kneeling tutorial" },
+               { t: "Search: band pull-apart for upper back", q: "band pull apart face pull upper back tutorial" }] },
       tablehi: { how: ["Set up as for a table row, but put your heels on a chair so your body is level from shoulder to heel.",
               "Grip the edge with straight arms and squeeze the glutes so you are one rigid line.",
               "Pull your chest to the edge, driving the shoulder blades together and down.",
@@ -840,14 +882,14 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
         vids: [{ t: "Inverted Rows — beginner to advanced progressions", url: "https://www.youtube.com/watch?v=Fl0UMfdEzsE" },
                { t: "Get your first pull-up with inverted rows", url: "https://www.youtube.com/watch?v=eRxOKu_MiVE" },
                { t: "Search: inverted row form", q: "inverted row proper form tutorial progressions" }] },
-      onearm: { how: ["Stand beside a sturdy table corner and take the edge with one hand.",
-              "Walk your feet forward and lean back until that arm is carrying your weight, body straight.",
+      onearm: { how: ["Stand beside an open doorway and take the frame with one hand at about chest height.",
+              "Walk your feet toward the frame and lean back until that arm is carrying your weight, body straight.",
               "Pull your chest toward that hand, keeping both hip bones facing the ceiling.",
-              "Do all the reps, then swap sides. Walk the feet back in to make it easier."],
-        watch: [["Hips rotating open toward the free side", "Staying square is the entire difficulty — slow down until you can."],
-                ["The table tipping", "Work at a corner or leg, or use a doorframe instead."],
+              "All the reps, then swap sides. Walk the feet back to make it easier. A solid post, railing or table edge works the same way."],
+        watch: [["Hips rotating open toward the free side", "Staying square is the entire difficulty — slow right down until you can."],
+                ["Hand slipping on a painted frame", "Hook the fingers around the edge of the frame, or drape a towel over it and hold that."],
                 ["A sudden jump in difficulty", "This is roughly a negative pull-up in effort. Regress by walking the feet back."]],
-        vids: [{ t: "Search: one-arm bodyweight row progression", q: "one arm inverted row progression tutorial" },
+        vids: [{ t: "Search: one-arm doorway row", q: "one arm doorway row bodyweight back exercise tutorial" },
                { t: "Search: back training with no pull-up bar", q: "back workout no pull up bar bodyweight at home" }] },
       neg: { how: ["Set a box or step under the bar so you can start with your chin already over it.",
               "Step or jump up to the top position and hold it for a second, shoulders pulled down.",
@@ -1182,8 +1224,9 @@ p.lede{color:var(--ink-2);max-width:66ch;margin:0 0 4px}
   const DEMO_FOR = {
     "push:wall": "pushwall", "push:incline": "pushincline", "push:knee": "pushknee",
     "push:full": "pushfull", "push:diamond": "pushfull",
-    "pull:door": "row", "pull:table": "row", "pull:tablehi": "rowhi",
-    "pull:inv": "rowhi", "pull:onearm": "row", "pull:neg": "pullup", "pull:pullup": "pullup",
+    "pull:door": "row", "pull:band": "row", "pull:towel": "row", "pull:table": "row",
+    "pull:towelhi": "rowhi", "pull:tablehi": "rowhi", "pull:inv": "rowhi",
+    "pull:onearm": "row", "pull:neg": "pullup", "pull:pullup": "pullup",
     "squat:box": "squat", "squat:bw": "squat", "squat:split": "split",
     "squat:bulg": "split", "squat:pistol": "split",
     "hinge:bridge": "bridge", "hinge:slbridge": "bridge", "hinge:thrust": "thrust", "hinge:nordic": "nordic",

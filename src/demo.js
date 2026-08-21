@@ -83,8 +83,9 @@
   const DEMO_FOR = {
     "push:wall": "pushwall", "push:incline": "pushincline", "push:knee": "pushknee",
     "push:full": "pushfull", "push:diamond": "pushfull",
-    "pull:door": "row", "pull:table": "row", "pull:tablehi": "rowhi",
-    "pull:inv": "rowhi", "pull:onearm": "row", "pull:neg": "pullup", "pull:pullup": "pullup",
+    "pull:door": "row", "pull:band": "row", "pull:towel": "row", "pull:table": "row",
+    "pull:towelhi": "rowhi", "pull:tablehi": "rowhi", "pull:inv": "rowhi",
+    "pull:onearm": "row", "pull:neg": "pullup", "pull:pullup": "pullup",
     "squat:box": "squat", "squat:bw": "squat", "squat:split": "split",
     "squat:bulg": "split", "squat:pistol": "split",
     "hinge:bridge": "bridge", "hinge:slbridge": "bridge", "hinge:thrust": "thrust", "hinge:nordic": "nordic",

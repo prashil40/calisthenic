@@ -649,7 +649,8 @@
   const KEY = "ztb.v1";
   const DEFAULT_LEVELS = { push: "incline", pull: "table", squat: "bw",
                            hinge: "bridge", dip: "bknee", core: "plank", side: "side" };
-  const DEFAULT_GEAR = { bar: false, dipbars: false };
+  // Derived from GEAR so adding a piece of kit cannot leave a hole here.
+  const DEFAULT_GEAR = GEAR.reduce((o, g) => { o[g.id] = false; return o; }, {});
 
   // Levels used to be an index into the ladder, and checks a positional
   // array. Both broke the moment a ladder changed shape, so both are keyed
